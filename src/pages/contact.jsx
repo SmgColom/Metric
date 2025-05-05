@@ -108,12 +108,12 @@ const ContactPage = () => {
           <div className={styles.infoBox}>
             <div>
               <a
-                href="https://wa.me/573009919207?text=Hola!%20Quisiera%20hablar%20contigo%20sobre%20una%20consulta."
+                href="https://wa.me/573022460236?text=Hola!%20Quisiera%20hablar%20contigo%20sobre%20una%20consulta."
                 target="_blank" rel="noopener noreferrer">
                 <div className={styles.icon}><BsWhatsapp /></div>
               </a>
               <h3>WhatsApp</h3>
-              <p> 300 991 9207</p>
+              <p> 302 246 0236</p>
             </div>
 
             <div>
