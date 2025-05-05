@@ -1,9 +1,14 @@
-// [2A] BASIC ROUTES - URL: https://localhost:3000/about
+import styles from "./about.module.scss";
 
 const AboutPage = () => {
   return <div>
-    <h1>About Us</h1>
-    <p>Lorem ipsum dolor, sit amet consectetur adipisicing elit. Cum, quae consequatur. Nesciunt nostrum perspiciatis fuga voluptates commodi deleniti facilis iusto? Sapiente sequi nobis quos. Vel unde omnis iusto error quod iste libero corrupti sed quae doloribus officiis amet et obcaecati fugit consectetur ipsam, odio qui blanditiis nesciunt atque repellat? In!</p>
+    <div className={styles.imagen}>
+    <img src="/Imagenperfil.jpeg" alt="Imagen de perfil asesora Mile Toro" />
+    </div>
+    
+
+    <h1>Soy Mile, tu asesora de protección familiar y patrimonial</h1>
+    <p>Porque cuidar lo que más quieres no debería ser complicado.Soy asesora de seguros y estoy para acompañarte con empatía, claridad y el respaldo de la mano de la compañía que cumple cuando más lo necesitás.solo dime qué te preocupa, y construimos juntos la mejor solución. 💙</p>
   </div>;
 };
 export default AboutPage;

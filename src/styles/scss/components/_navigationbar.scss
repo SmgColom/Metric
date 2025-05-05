@@ -11,10 +11,12 @@
   padding: 0 10%;
 
   .brand {
+    margin-left: 0;
     font-size: 1.7rem;
-    font-weight: 700;
+    max-width: 200px;
     text-transform: lowercase;
     color: color.adjust($brandColor, $lightness: 50%);
+    border-radius: 10px;
     
     &:hover {
       color: color.adjust($brandColor, $lightness: 35%);

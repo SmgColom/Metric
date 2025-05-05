@@ -7,8 +7,8 @@ const HomePage = () => {
   return (
     <div>
       {/* <Header /> */}
-      <h1>Welcome to Next.js Intro</h1>
-      <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit. Explicabo perspiciatis ipsa saepe ex quibusdam quae, autem est ullam dicta ad?</p>
+      <h1>Proteccion personal y patrimonial para toda la familia </h1>
+      <p>Construyamos juntos las mejores souciones de seguros a la medida de tus necesidades</p>
 
       <h4>Navigation</h4>
       <nav>

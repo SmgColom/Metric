@@ -2,23 +2,21 @@
 @use '../../styles/scss/abstracts/' as *;
 
 .header {
+  margin-top: 30px;
   width: 100%;
   height: 5rem;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  background-color: $primaryColor;
-  padding: 0 10%;
+  justify-content:space-between;
+  padding: 0 2rem;
+  margin-bottom: 100px;
 
-  .brand {
+  .brand img {
     font-size: 1.7rem;
-    font-weight: 700;
-    text-transform: lowercase;
-    color: color.adjust($brandColor, $lightness: 50%);
-    
-    &:hover {
-      color: color.adjust($brandColor, $lightness: 35%);
-    }
+    height: 7rem; 
+    width: 7rem;
+    object-fit:fill;
+    border-radius: 25%;
   }
 
   nav {
@@ -35,15 +33,13 @@
     }
   
     a {
-      color: $highlightColor;
       font-size: 1.2em;
       font-weight: 400;
       letter-spacing: 1px;
-      text-transform: uppercase;
       text-decoration: none;
   
       &:hover, &:active {
-        color: color.adjust($brandColor, $lightness: 35%);
+        color: $brandColor;
       }
     }
   }

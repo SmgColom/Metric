@@ -1,9 +1,9 @@
 @use "sass:color";
 
 // MAIN COLORS
-$primaryColor: #111827;
-$complementaryColor: #f9fafb;
-$brandColor: #4338ca;
+$primaryColor: linear-gradient(180deg, #f8f9fa 10%, #e9ecef 100%);
+$complementaryColor: #232f45;
+$brandColor: #ffd700;
 
 $highlightColor: #d1d5db;
 $dangerColor: #7f1d1d;
