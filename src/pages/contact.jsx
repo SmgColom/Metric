@@ -108,7 +108,7 @@ const ContactPage = () => {
           <div className={styles.infoBox}>
             <div>
               <a
-                href="https://wa.me/+573009919207?text=Hola!%20Quisiera%20hablar%20contigo%20sobre%20una%20consulta."
+                href="https://wa.me/573009919207?text=Hola!%20Quisiera%20hablar%20contigo%20sobre%20una%20consulta."
                 target="_blank" rel="noopener noreferrer">
                 <div className={styles.icon}><BsWhatsapp /></div>
               </a>
