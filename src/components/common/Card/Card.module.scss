@@ -1,7 +1,7 @@
 @use '@/styles/scss/abstracts/' as *;
 
 %card {
-  background-color: $complementaryColor;
+  background-color: $primaryColor;
   border-radius: 6px;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.2);
 
@@ -18,4 +18,5 @@
 
 .gridCard {
   @extend %card;
+  
 }

@@ -17,8 +17,8 @@ function Blog(props) {
         />
       </Head>
       <HeroSection 
-        title="Blog de Bienestar"
-        description="Encuentra la mejor información para tu bienestar"
+        title="Salud y Bienestar"
+        description="Encuentra la mejor información para tu cuidado personal y familiar"
         bgImage="/backgrounds/Bienestar.jpg"
       />
 
@@ -29,7 +29,7 @@ function Blog(props) {
 
 // ngsp
 export const getStaticProps = async () => {
-  const response = await fetch(`https://newsapi.org/v2/everything?q=health+OR+wellness&language=es&apiKey=${process.env.WELLNESS_API_KEY}`);
+  const response = await fetch(`https://newsapi.org/v2/everything?q=health+OR+wellness&language=es&pageSize=6&apiKey=${process.env.WELLNESS_API_KEY}`);
   const data = await response.json();
   const articles = data.articles;
   //console.log(articles);
@@ -43,7 +43,7 @@ export const getStaticProps = async () => {
     props: {
       WellnessArticles: articles
     },
-    revalidate: 60  // ISR
+    revalidate: 3600  // ISR
   };
 };
 

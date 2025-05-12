@@ -24,7 +24,7 @@ function ArticleItem(props) {
       {/* CARD FOOTER */}
       <div className={styles.articleFooter}>
         <ButtonLink path={props.url} target="_blank">
-          Link to Article
+          Link al artículo
         </ButtonLink>
       </div>
     </Card>
