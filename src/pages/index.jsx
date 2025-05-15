@@ -21,25 +21,25 @@ function HomePage() {
   )
 }
 
-export const getStaticProps = async () => {
+//export const getStaticProps = async () => {
   // Fetch data BUT FROM OUR API
-  const response = await fetch(`${process.env.SERVER_NAME}/api/news`);
-  const data = await response.json();
+  //const response = await fetch(`${process.env.SERVER_NAME}/api/news`);
+  //const data = await response.json();
 
   // ERROR HANDLING WITH SSR
-  if(!response.ok){
-    throw new Error(`Failed to fetch posts - Error ${response.status}: ${data.message}`)
-  }
+  //if(!response.ok){
+    //throw new Error(`Failed to fetch posts - Error ${response.status}: ${data.message}`)
+ // }
 
   // Check the data is loading
-  console.log(data);
+  //console.log(data);
 
-  return {
-    props: {
-      articles: data
-    },
-    revalidate: 60 * 60
-  };
-};
+  //return {
+   // props: {
+     // articles: data
+    //},
+    //revalidate: 60 * 60
+  //};
+//};
 
 export default HomePage;
