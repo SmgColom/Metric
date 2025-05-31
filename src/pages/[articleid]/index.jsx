@@ -4,7 +4,7 @@ import Head from 'next/head';
 import ArticleDetail from '@/components/features/articles/ArticleDetail';
 
 function ArticleDetailPage(props) {
-  const { article } = props;
+  const { article } = props;  
 
   return (
     <Fragment>
@@ -27,44 +27,37 @@ function ArticleDetailPage(props) {
 
 // STATIC SITE DYNAMIC PATHS (snippet: "ngspa")
 export const getStaticPaths = async () => {
-  // (a) Fetches ENTIRE articles array from INTERNAL API
   const response = await fetch(`https://newsapi.org/v2/everything?q=health+OR+wellness&language=es&pageSize=6&apiKey=${process.env.WELLNESS_API_KEY}`);
-  const articles = await response.json();
+  const data = await response.json();
+  const articles = data.articles;
 
-  // (b) Pull ALL the ids out of the articles array ONLY [CHANGE NEWS TO ARTICLE -> _id]
-  const idList = articles.map((article) => article._id);
-  // console.log(idList);
-
-  // (c) Pre-build ALL the URL paths for all existing ids in array 
-  const paths = idList.map((id) => (
-    { params: { articleId: id.toString() }}
-  ));
-  // NOTE: The id MUST be converted to a string, as URLs need strings NOT numbers!
-  // console.log(paths)
+  const paths = articles.map((article, index) => ({
+    params: { articleId: index.toString() }
+  }));
 
   return {
     paths,
     fallback: false
-  }
+  };
 }
 
-// STATIC SITE GENERATION (snippet: "ngsp")
-export const getStaticProps = async ( context ) => {
-  // (a) Fetches ENTIRE articles array from INTERNAL API
-  const response = await fetch(`https://newsapi.org/v2/everything?q=health+OR+wellness&language=es&pageSize=6&apiKey=${process.env.WELLNESS_API_KEY}`);
-  const articles = await response.json();
-  
-  // (b) Store params id value (article USER wants!)
-  const articleQuery = context.params.articleId;
 
-  // (c) Filters articles array to match & return article passed in params - CHANGE ID (id -> _id)
-  const articleMatch = articles.filter(
-    (article) => article._id.toString() === articleQuery 
-  )
+// STATIC SITE GENERATION (snippet: "ngsp")
+
+js
+Copiar
+Editar
+export const getStaticProps = async (context) => {
+  const response = await fetch(`https://newsapi.org/v2/everything?q=health+OR+wellness&language=es&pageSize=6&apiKey=${process.env.WELLNESS_API_KEY}`);
+  const data = await response.json();
+  const articles = data.articles;
+
+  const articleQuery = parseInt(context.params.articleId);
+  const articleMatch = articles[articleQuery];
 
   return {
     props: {
-      article: articleMatch[0]
+      article: articleMatch
     },
   };
 };
