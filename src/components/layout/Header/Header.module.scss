@@ -2,18 +2,20 @@
 @use '@/styles/scss/abstracts/' as *;
 
 .header {
-  margin-top: 30px;
+  margin-top: 20px;
   width: 100%;
-  height: 5rem;
   display: flex;
   align-items: center;
   justify-content:space-between;
-  padding: 0 2rem;
+  padding: 0 2%;
+  position: fixed;
+  z-index: 1;
+  top: 0;
 
   .brand img {
-    font-size: 1.7rem;
-    height: 7rem; 
-    width: 7rem;
+    
+    height: 6rem; 
+    width: 6rem;
     object-fit:fill;
     border-radius: 25%;
   }

@@ -1,36 +1,36 @@
 [{
-  "title": "Node.js 18 updates OpenSSL support, enables fetch API",
-  "description": "Experimental global fetch API that simplifies writing cross-platform HTTP request code is available by default in the latest version of the popular JavaScript runtime.",
-  "category": "Node.js",
+  "solución": "Vida Individual",
+  "descripción": "Cobertura en indemnización para proteger la capacidad de generar ingresos de forma que se pueda prevenir el presente y el futuro personal y familiar",
+  "coberturas": "Muerte por cualquier causa, Muerte accidental, Invalidez por accidente, Invalidez por enfermedad, Renta Diaria, Enfermedades graves, Cancer, cobertura exequial",
   "image": "/articles/fetch-api.webp"
 },
 {
-  "title": "Harvard census identifies most commonly used open source packages",
-  "description": "Researchers hope that by raising awareness of the most widely used open source packages, they can help prevent the next Log4j or Heartbleed exploit from happening.",
-  "category": "Industry",
+  "solución": "Salud Familiar",
+  "descripción": "Researchers hope that by raising awareness of the most widely used open source packages, they can help prevent the next Log4j or Heartbleed exploit from happening.",
+  "coberturas": "Industry",
   "image": "/articles/research-notes.webp"
 },
 {
-  "title": "Vercel CEO: Deployment should be instantaneous",
-  "description": "Vercel CEO and founder Guillermo Rauch discusses his company’s push to bring streamlined workflows, continuous deployment, optimized frameworks, and infinite scale to every developer.",
-  "category": "Industry",
+  "solución": "Autos",
+  "descripción": "Vercel CEO and founder Guillermo Rauch discusses his company’s push to bring streamlined workflows, continuous deployment, optimized frameworks, and infinite scale to every developer.",
+  "coberturas": "Industry",
   "image": "/articles/vercel-icon.webp"
 },
 {
-  "title": "React 19 Beta Launches",
-  "description": "React 19 Beta introduces concurrent rendering by default, simplifies data fetching with Suspense, and offers React Server Components, improving client-server rendering integration for smoother user experiences and enhanced performance.",
-  "category": "React.js",
+  "solución": "Hogar",
+  "descripción": "React 19 Beta introduces concurrent rendering by default, simplifies data fetching with Suspense, and offers React Server Components, improving client-server rendering integration for smoother user experiences and enhanced performance.",
+  "coberturas": "React.js",
   "image": "/articles/react-image.webp"
 },
 {
-  "title": "Next.js Version 14 Launches",
-  "description": "Next.js 14 release introduces improved performance with Concurrent Mode and SSR streaming. Webpack 5 support enhances build speeds, and Image Component offers optimized image loading. Additionally, middleware support and enhanced Next.js Analytics provide better development insights.", 
-  "category": "Next.js",
+  "solución": "Multiriesgo empresarial",
+  "descripción": "Next.js 14 release introduces improved performance with Concurrent Mode and SSR streaming. Webpack 5 support enhances build speeds, and Image Component offers optimized image loading. Additionally, middleware support and enhanced Next.js Analytics provide better development insights.", 
+  "coberturas": "Next.js",
   "image": "/articles/coding-screen.webp"
 },
 {
-  "title": "US Tech Sector Faces Layoffs",
-  "description": "Recent layoffs in the US tech sector, including Tesla cutting 10%, Discord laying off 17%, and Twitch slashing 35% of its workforce, reflect industry adjustments amid economic flux. Despite challenges, demand for remote work technologies persists, fostering continued innovation and adaptation.",
-  "category": "Industry",
+  "solución": "Vida Grupo",
+  "descripción": "Recent layoffs in the US tech sector, including Tesla cutting 10%, Discord laying off 17%, and Twitch slashing 35% of its workforce, reflect industry adjustments amid economic flux. Despite challenges, demand for remote work technologies persists, fostering continued innovation and adaptation.",
+  "coberturas": "Industry",
   "image": "/articles/market-bust.webp"
 }]

@@ -4,10 +4,10 @@
   text-align: center;
 
   .imageBox {
-    height: 30vh;
+    height: 45vh;
     overflow: hidden;
     position: relative;
-  
+
     .nextImage {
       object-fit: cover;
       border-radius: 4px;
@@ -15,7 +15,7 @@
       border-top-left-radius: 6px;
     }
   }
-
+  
   .articleContent {
     padding: 1rem;
     margin: 0rem;

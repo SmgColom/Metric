@@ -6,14 +6,17 @@ function ArticlesList(props) {
 
   return (
     <Container>
-      {articles.map((article) => (
+      {/* ADJUST LIST IDs TOO (id -> _id) */}
+      {articles.map((article, index) => (
         <ArticleItem
-          key={article.title}
-          id={article.title}
+            key={article._id ? article._id : index}
+            id={article._id ? article._id : index}
+          image={article.image}
           urlToImage={article.urlToImage}
           url={article.url}
           title={article.title}
           description={article.description}
+          category={article.category}
         />
       ))}
     </Container>

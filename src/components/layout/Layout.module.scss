@@ -1,4 +1,4 @@
-.app {
+ .app {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
@@ -6,7 +6,7 @@
 
 .main {
   margin: 0 auto;
-  margin-top: 5rem; // Same as height of Header.jsx
+  margin-top: 7rem; // Same as height of Header.jsx
   width: 100%;
   flex: 1;
 }

@@ -43,7 +43,12 @@ module.exports = (phase) => {
       if (isProd) return 'https://miletoroseguros.vercel.app/'
     })(),
     NEWS_API_KEY: process.env.NEWS_API_KEY,
-  }
+    NEXT_PUBLIC_GA_ID: process.env.NEXT_PUBLIC_GA_ID,
+
+    MONGO_ATLAS_CONNECTION_URI: process.env.MONGO_ATLAS_URI,
+
+    
+  } 
 
   // Next.config returns an object
   return {
