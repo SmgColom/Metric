@@ -2,46 +2,211 @@
 @use '@/styles/scss/abstracts/' as *;
 
 .header {
-  margin-top: 20px;
   width: 100%;
   display: flex;
   align-items: center;
-  justify-content:space-between;
-  padding: 0 2%;
+  justify-content: space-between;
+  padding: 1rem 1rem;
   position: fixed;
-  z-index: 1;
+  z-index: 10;
   top: 0;
+  background-color: white;
+  flex-direction: row;
+
+  &.scrolled {
+    backdrop-filter: blur(4px);
+    background-color: rgba(217, 229, 241, 0.4);
+  }
 
   .brand img {
-    
-    height: 6rem; 
+    height: 6rem;
     width: 6rem;
-    object-fit:fill;
+    object-fit: fill;
     border-radius: 25%;
   }
 
-  nav {
+  .nav {
     ul {
       list-style: none;
       margin: 0;
       padding: 0;
       display: flex;
-      align-items: baseline;
-    }
-  
-    li {
-      margin-left: 3rem;
-    }
-  
-    a {
-      font-size: 1.2em;
-      font-weight: 400;
-      letter-spacing: 1px;
-      text-decoration: none;
-  
-      &:hover, &:active {
-        color: $brandColor;
+      align-items: center;
+
+      li {
+        position: relative;
+        margin-left: 3rem;
+
+        a {
+          font-size: 1.2em;
+          font-weight: 400;
+          letter-spacing: 1px;
+          text-decoration: none;
+          background: none;
+          border: none;
+          cursor: pointer;
+
+          &:hover,
+          &:active {
+            color: $brandColor;
+          }
+        }
+
+        .dropdownMenu {
+          background-color: $complementaryColor;
+          display: none;
+          position: absolute;
+          top: 100%;
+          left: 0;
+          flex-direction: column;
+          padding: 1rem;
+          z-index: 100;
+
+          li {
+            margin: 0.5rem 0;
+            position: relative;
+
+            a {
+              color: white;
+
+              &:hover {
+                color: $brandColor;
+              }
+            }
+
+            .submenuList {
+              background-color: $complementaryColor;
+              display: none;
+              position: absolute;
+              top: 0;
+              left: 100%;
+              padding: 1rem;
+              white-space: nowrap;
+              flex-direction: column;
+              min-width: 200px;
+            }
+
+            &:hover .submenuList {
+              display: flex;
+            }
+          }
+        }
+
+        &:hover .dropdownMenu {
+          display: flex;
+        }
       }
     }
   }
+
+  // Mobile styles
+  @media (max-width: 768px) {
+    .brand {
+      position: absolute;
+      top: 2rem;
+      margin-left: 1rem;
+      display: flex;
+      z-index: 11;
+    }
+
+    .hamburger {
+      position: absolute;
+      margin: 20px;
+      right: 1rem;
+      top: 2rem;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+      width: 30px;
+      height: 25px;
+      cursor: pointer;
+      z-index: 11;
+
+      span {
+        height: 3px;
+        width: 100%;
+        background: $complementaryColor;
+        transition: all 0.3s ease-in-out;
+      }
+    }
+
+    .nav {
+      display: none;
+      width: 100%;
+      margin-top: 6.5rem;
+      transition: all 0.3s ease-in-out;
+
+      &.active {
+        display: block;
+      }
+
+      ul {
+        flex-direction: column;
+        align-items: flex-start;
+        padding: 1rem 2rem;
+
+        li {
+          width: 100%;
+          margin: 1rem 0;
+          text-align: left;
+
+          a {
+            width: 100%;
+            display: block;
+            padding: 0.5rem 0;
+          }
+
+          .dropdownMenu {
+            position: static;
+            background-color: transparent;
+            box-shadow: none;
+            padding: 0;
+
+            li {
+              margin: 0.5rem 0;
+
+              a {
+                color: $complementaryColor;
+
+                &:hover {
+                  color: $brandColor;
+                }
+              }
+
+              .submenuList {
+                display: none;
+                position: static;
+                padding-left: 1rem;
+                flex-direction: column;
+
+                a {
+                  color: #f8f9fa;
+
+                  &:hover {
+                    color: $brandColor;
+                  }
+                }
+              }
+
+              &:hover .submenuList {
+                display: flex;
+              }
+            }
+          }
+
+          &:hover .dropdownMenu {
+            display: block;
+          }
+        }
+      }
+    }
+  }
+
+  @media (min-width: 769px) {
+    .hamburger {
+      display: none;
+    }
+  }
 }
+
+
