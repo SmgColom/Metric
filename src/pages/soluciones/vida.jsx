@@ -1,6 +1,6 @@
 import { Fragment } from 'react';
 import Head from 'next/head';
-import HeroAbout from '@/components/layout/AboutSection/HeroAbout';
+import HeroHome from '@/components/layout/HeroSection/HeroHome';
 
 function VidaPage() {
   return (
@@ -12,7 +12,7 @@ function VidaPage() {
           description='Descripción de la oferta del seguro de vida individual con el respaldo de Sura y la asesora Mile Toro'
           />
           </Head>
-      <HeroAbout 
+      <HeroHome 
       title="Vida Individual"
       subtitle="Protege el futuro de quienes más amas💙"
       description="La vida está llena de momentos valiosos, y aunque no podemos predecir el futuro, sí podemos prepararnos para él. Con nuestra póliza de seguro de vida, garantizas tranquilidad y respaldo económico para tus seres queridos cuando más lo necesiten."
