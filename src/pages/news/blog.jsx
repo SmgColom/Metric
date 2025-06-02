@@ -19,7 +19,7 @@ function Blog(props) {
       <HeroSection 
         title="Salud y Bienestar"
         description="Encuentra la mejor información para tu cuidado personal y familiar"
-        bgImage="/backgrounds/Bienestar.jpg"
+        bgImage="/backgrounds/Bienestar.jpeg"
       />
 
       {WellnessArticles.length > 0 && <ArticlesList articles={WellnessArticles}/>}

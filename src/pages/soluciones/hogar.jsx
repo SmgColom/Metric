@@ -1,27 +1,32 @@
 import { Fragment } from 'react';
 import Head from 'next/head';
-import HeroHome from '@/components/layout/HeroSection/HeroHome';
+import HeroSection from "@/components/layout/HeroSection/HeroSection";
+import Content from '@/components/layout/HeroSection/Content';
+
+
 
 function HogarPage() {
   return (
     <Fragment>
        <Head>
-        <title>SegurosMileToro|Vida Individual</title>
+        <title>SegurosMileToro|Hogar</title>
         <meta 
-          name='Seguros de Vida Individual asesora Mile Toro'
-          description='Descripción de la oferta del seguro de vida individual con el respaldo de Sura y la asesora Mile Toro'
+          name='Seguros de Hogar asesora Mile Toro'
+          description='Descripción de la oferta del seguro de Hogar con el respaldo de Sura y la asesora Mile Toro'
           />
           </Head>
-      <HeroHome 
+      <HeroSection 
       title="Hogar"
-      subtitle="Protege el futuro de quienes más amas💙"
-      description="La vida está llena de momentos valiosos, y aunque no podemos predecir el futuro, sí podemos prepararnos para él. Con nuestra póliza de seguro de vida, garantizas tranquilidad y respaldo económico para tus seres queridos cuando más lo necesiten."
-      feature1="Apoyo financiero para tu familia en caso de fallecimiento"
-      feature2="Cobertura flexible y adaptada a tus necesidades"
-      feature3="Opciones de ahorro e inversión a largo plazo"
-      feature4="Trámite fácil, rápido y sin complicaciones"
-      feature5="Haz que tu legado sea seguridad y amor. Asegura tu vida hoy y vive con la tranquilidad de saber que estás cuidando a los tuyos."
-        bgImage="/backgrounds/vida.jpg"
+      description="Tu hogar, siempre protegido"
+      bgImage="/backgrounds/hogar.jpeg"
+        />
+    <Content
+      description="Tu casa es más que un lugar: es donde construyes recuerdos, compartes momentos y te sientes seguro. Con nuestra póliza de seguro para el hogar, cuidas lo que más valoras frente a imprevistos como incendios, robos, daños por agua y más."
+      feature1="Cobertura para la estructura y el contenido del hogar"
+      feature2="Protección ante desastres naturales, robos y accidentes domésticos"
+      feature3="Asistencia domiciliaria 24/7 (plomería, cerrajería, electricidad, etc.)"
+      feature4="Planes flexibles según el tipo de vivienda y tus necesidades"
+      finalmessage="No esperes a que algo pase para actuar. Asegura tu hogar hoy y vive con la tranquilidad de estar respaldado."
       />
     </Fragment>
   )

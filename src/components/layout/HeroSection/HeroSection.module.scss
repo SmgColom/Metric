@@ -3,35 +3,59 @@
 
 .showcase {
   margin-top:30px;
-  padding: 0px 2px;
-  background: no-repeat center/cover;  
-  height: 25vh;
+  background: no-repeat center/cover;
+  background-position: 20% 30%;
+  height: 50vh;
+  position: relative;
   
 
   .overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background-color: rgba(213, 213, 240, 0.5);
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    margin: 0 auto;
+    text-align: center;
  
 
     h1 {
+      align-items: center;
       font-size: 2.8em;
       font-weight: 400;
       color: $complementaryColor;
-      letter-spacing: 1px;
-
+      
+    }
+  
+    span {
+      font-weight: 700;
+    }
+  
+    h2 {
+      align-items: center;
+      font-size: 1.5em;
+      color: $complementaryColor;
+      
       span {
         font-weight: 700;
       }
     }
-
-    p {
-      margin: 0.5rem;
-      font-size: 1.2em;
-      color:$complementaryColor;
-    }
   }
+}
+
+@media (max-width: 1024px) {
+
+  .showcase {
+    margin-top: 100px;
+  }
+
+}
+
+
+@media (max-width: 430px) {
+
+  .showcase {
+ background-position: 60% 50%;
+  }
+
 }

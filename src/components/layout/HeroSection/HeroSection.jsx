@@ -12,7 +12,7 @@ function HeroSection({ title, description, bgImage }) {
     >
       <div className={styles.overlay}>
         <h1><span>{title}</span></h1>
-        <p>{description}</p>
+        <h2><span>{description}</span></h2>
         <img src="/" alt="" />
       </div>
       

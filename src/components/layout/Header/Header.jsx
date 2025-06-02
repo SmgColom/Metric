@@ -43,8 +43,8 @@ function Header() {
       {/* Menú de navegación con clase activa si está abierto */}
       <nav className={`${styles.nav} ${menuOpen ? styles.active : ''}`}>
         <ul>
-          <li><Link href="/">Inicio</Link></li>
-          <li><Link href="/about">Quien Soy Yo</Link></li>
+          <li><Link href="/" onClick={() => setMenuOpen(false)}>Inicio</Link></li>
+          <li><Link href="/about" onClick={() => setMenuOpen(false)}>Quien Soy Yo</Link></li>
 
           <li className={styles.dropdown}>
             <a>Soluciones</a>
@@ -52,31 +52,31 @@ function Header() {
               <li className={styles.submenu}>
                 <a>Para personas</a>
                 <ul className={styles.submenuList}>
-                  <li><Link href="/soluciones/vida">Vida Individual</Link></li>
-                  <li><Link href="/soluciones/salud">Salud Familiar</Link></li>
-                  <li><Link href="/soluciones/movilidad">Movilidad</Link></li>
-                  <li><Link href="/soluciones/hogar">Hogar</Link></li>
+                  <li><Link href="/soluciones/vida" onClick={() => setMenuOpen(false)}>Vida Individual</Link></li>
+                  <li><Link href="/soluciones/salud" onClick={() => setMenuOpen(false)}>Salud Familiar</Link></li>
+                  <li><Link href="/soluciones/movilidad" onClick={() => setMenuOpen(false)}>Movilidad</Link></li>
+                  <li><Link href="/soluciones/hogar" onClick={() => setMenuOpen(false)}>Hogar</Link></li>
                 </ul>
               </li>
               <li className={styles.submenu}>
                 <a>Para empresas</a>
                 <ul className={styles.submenuList}>
-                  <li><Link href="/soluciones/multiriesgo">Multiriesgo Empresarial</Link></li>
-                  <li><Link href="/soluciones/responsabilidad">Responsabilidad Civil</Link></li>
-                  <li><Link href="/soluciones/transporte">Transporte</Link></li>
-                  <li><Link href="/soluciones/cumplimiento">Cumplimiento</Link></li>
-                  <li><Link href="/soluciones/bienes">Bienes y Patrimonio</Link></li>
-                  <li><Link href="/soluciones/construccion">Todo Riesgo Construcción</Link></li>
-                  <li><Link href="/soluciones/agro">Agro</Link></li>
-                  <li><Link href="/soluciones/arl">ARL</Link></li>
+                  <li><Link href="/soluciones/multiriesgo" onClick={() => setMenuOpen(false)}>Multiriesgo Empresarial</Link></li>
+                  <li><Link href="/soluciones/responsabilidad" onClick={() => setMenuOpen(false)}>Responsabilidad Civil</Link></li>
+                  <li><Link href="/soluciones/transporte" onClick={() => setMenuOpen(false)}>Transporte</Link></li>
+                  <li><Link href="/soluciones/cumplimiento" onClick={() => setMenuOpen(false)}>Cumplimiento</Link></li>
+                  <li><Link href="/soluciones/bienes" onClick={() => setMenuOpen(false)}>Bienes y Patrimonio</Link></li>
+                  <li><Link href="/soluciones/construccion" onClick={() => setMenuOpen(false)}>Todo Riesgo Construcción</Link></li>
+                  <li><Link href="/soluciones/agro" onClick={() => setMenuOpen(false)}>Agro</Link></li>
+                  <li><Link href="/soluciones/arl" onClick={() => setMenuOpen(false)}>ARL</Link></li>
                 </ul>
               </li>
             </ul>
           </li>
 
-          <li><Link href="/news/blog">Salud y Bienestar</Link></li>
+          <li><Link href="/news/blog" onClick={() => setMenuOpen(false)}>Salud y Bienestar</Link></li>
           <li><Link href="https://pagos.segurossura.com.co/pagos" target="_blank" rel="noopener noreferrer">Pago Express</Link></li>
-          <li><Link href="/contact">Contáctame</Link></li>
+          <li><Link href="/contact" onClick={() => setMenuOpen(false)}>Contáctame</Link></li>
         </ul>
       </nav>
     </header>
