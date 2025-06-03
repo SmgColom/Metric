@@ -6,6 +6,7 @@ function Header() {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const handleScroll = () => setScrolled(window.scrollY > 50);
+  const [showModal, setShowModal] = useState(false);
 
   useEffect(() => {
 
@@ -27,11 +28,22 @@ function Header() {
 
   return (
     <header className={`${styles.header} ${scrolled ? styles.scrolled : ""}`}>
-      <div className={styles.brand}>
-        <Link href="/">
-          <div><img src="/Logo.jpeg" alt="Logo asesora Milena Toro" /></div>
-        </Link>
+<div className={styles.brand}>
+        <div onClick={() => setShowModal(true)} style={{ cursor: 'pointer' }}>
+          <img src="/Logo.jpeg" alt="Logo asesora Milena Toro" />
+        </div>
       </div>
+
+      {showModal && (
+        <div className={styles.modalOverlay}>
+          <div className={styles.modalContent}>
+            <button onClick={() => setShowModal(false)} className={styles.closeButton}>
+              ✖️
+            </button>
+            <img src="/Logo.jpeg" alt="Logo grande" className={styles.modalImage} />
+          </div>
+        </div>
+      )}
 
       {/* Botón hamburguesa */}
       <div className={styles.hamburger} onClick={() => setMenuOpen(!menuOpen)}>
