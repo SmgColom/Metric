@@ -51,12 +51,12 @@
 
     h1{
       text-align: center;
-      font-size: 2.5em;
+      font-size: 3em;
     }
 
     p{
       text-align: center;
-      font-size: 1.2em;
+      font-size: 1.5em;
       margin-bottom: 20px;
     }
   }
@@ -83,7 +83,6 @@
 
   @media (max-width: 430px) {
 
-    
     max-width: 100%;
     margin-top: 0;
 
@@ -100,11 +99,6 @@
   margin-bottom: 20px;
   padding-left: 2rem;
 
-  @media (max-width: 430px) {
-    padding-left: 0;
-    justify-content: center; 
-  }
-
   button,
   a {
     padding: 0.6rem 1.2rem;
@@ -119,6 +113,11 @@
 
   .button {
     padding-left: 3rem;
+
+    @media (max-width: 430px) {
+      padding-left: 0;
+      justify-content: center; 
+    }
   }
 }
 
