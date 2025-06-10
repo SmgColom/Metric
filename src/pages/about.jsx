@@ -13,8 +13,8 @@ function AboutPage() {
           />
           </Head>
       <HeroHome 
-      title="Mile Toro, tu asesora de soluciones de seguros"
-      description="Porque cuidar lo que más quieres no debería ser complicado.Soy asesora de seguros y estoy para acompañarte con empatía, claridad y el respaldo de la mano de la compañía que cumple cuando más lo necesitás. Solo dime qué te preocupa, y construimos juntos la mejor solución. 💙"
+      title="Mile Toro, tu asesora de soluciones en seguros"
+      description="Porque cuidar lo que más quieres no debería ser complicado,estoy para acompañarte con empatía, claridad y de la mano de la compañía que cumple cuando más lo necesitas. Solo dime qué te preocupa, y construimos juntos la mejor solución. 💙"
        imageUrl="/Imagenperfil.jpeg"
       />
     </Fragment>
