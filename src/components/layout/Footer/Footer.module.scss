@@ -24,26 +24,24 @@
   @media (max-width: 600px) {
     grid-template-columns: 1fr;
   }
+
+  @media (max-width: 430px) {
+    gap:0rem
+  }
 }
 
 .footerSection  {
   h4 {
-    font-size: 1.2rem;
+    font-size: 1.5rem;
     font-weight: bold;
-    margin-bottom: 1rem;
+    margin-bottom: 0.5rem;
   }
 
-  a {
+  a, p {
     display: block;
-    font-size: 0.9rem;
+    font-size: 1.2rem;
     margin-bottom: 0.5rem;
     text-decoration: none;
-  }
-
-  p {
-    display: block;
-    font-size: 0.9rem;
-    margin-bottom: 0.5rem;
   }
 
   .logo img {
@@ -89,7 +87,7 @@
   @media (max-width: 768px) {
 
     .footerwrapper{
-      padding-left: 3rem;
+      padding-left: 2rem;
       
     }
   }
@@ -100,11 +98,13 @@
   margin-top: 2rem;
   margin-bottom: 1rem;
   margin-right:  0rem;
-  padding-top: 1rem;
+  padding: 1rem;
   display: flex;
   flex-direction: column;
   align-items: center;
   gap: 1rem;
+
+
 
   @media(min-width: 768px) {
     
@@ -115,7 +115,7 @@
   p{
     color: $complementaryColor;
     text-align: center;
-    padding: 1rem 0;
+    
   }
 
   .socialIcons {
