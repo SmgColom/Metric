@@ -9,10 +9,10 @@ function SaludPage() {
   return (
     <Fragment>
        <Head>
-        <title>SegurosMileToro|Salud Familiar</title>
+       <title>Seguros Mile Toro|Salud</title>
         <meta 
-          name='Seguros de Salud familiar asesora Mile Toro'
-          description='Descripción de la oferta del seguro de salud familiar con el respaldo de Sura y la asesora Mile Toro'
+          name='description'
+          content='Descripción de la oferta de seguros de Salud con el respaldo de Sura y la asesoría de Mile Toro'
           />
           </Head>
       <HeroSection 

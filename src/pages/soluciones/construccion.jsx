@@ -9,10 +9,10 @@ function ConstruccionPage() {
   return (
     <Fragment>
        <Head>
-        <title>SegurosMileToro|Todo Riesgo Construcción</title>
+       <title>Seguros Mile Toro|TRC</title>
         <meta 
-          name='Seguro Todo Riesgo Construcción asesora Mile Toro'
-          description='Descripción de la oferta del seguro Todo Riesgo Construcción con el respaldo de Sura y la asesora Mile Toro'
+          name='description'
+          content='Descripción de la oferta de seguros de Todo riesgo construcción con el respaldo de Sura y la asesoría de Mile Toro'
           />
           </Head>
       <HeroSection 

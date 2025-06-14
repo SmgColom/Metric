@@ -6,10 +6,10 @@ function AboutPage() {
   return (
     <Fragment>
        <Head>
-        <title>SegurosMileToro | Quien Soy Yo</title>
+       <title>Seguros Mile Toro|Quien soy yo</title>
         <meta 
-          name='Seguros Mile Toro '
-          description='Perfil profesional de la asesora Mile Toro'
+          name='description'
+          content='Conoce a Mile Toro, la asesora de soluciones en Seguros Sura'
           />
           </Head>
       <HeroHome 

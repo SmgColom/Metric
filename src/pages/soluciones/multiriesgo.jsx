@@ -9,10 +9,10 @@ function MultiriesgoPage() {
   return (
     <Fragment>
        <Head>
-        <title>SegurosMileToro|Multiriesgo</title>
+       <title>Seguros Mile Toro|Multiriesgo</title>
         <meta 
-          name='Seguros Multiriesgo Empresarial asesora Mile Toro'
-          description='Descripción de la oferta del seguro Multiriesgo Empresarial con el respaldo de Sura y la asesora Mile Toro'
+          name='description'
+          content='Descripción de la oferta de seguros Multiriesgo con el respaldo de Sura y la asesoría de Mile Toro'
           />
           </Head>
       <HeroSection 

@@ -9,10 +9,10 @@ function TransportePage() {
   return (
     <Fragment>
        <Head>
-        <title>SegurosMileToro|Transporte</title>
+       <title>Seguros Mile Toro|Transporte</title>
         <meta 
-          name='Seguro de Transporte de mercancias asesora Mile Toro'
-          description='Descripción de la oferta del seguro de Transporte de mercancias con el respaldo de Sura y la asesora Mile Toro'
+          name='description'
+          content='Descripción de la oferta de seguros de Transporte con el respaldo de Sura y la asesoría de Mile Toro'
           />
           </Head>
       <HeroSection 

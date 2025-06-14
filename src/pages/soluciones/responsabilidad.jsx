@@ -9,10 +9,10 @@ function ResponsabilidadPage() {
   return (
     <Fragment>
        <Head>
-        <title>SegurosMileToro|Responsabilidad Civil</title>
+       <title>Seguros Mile Toro|RC</title>
         <meta 
-          name='Seguro de Responsabilidad Civil asesora Mile Toro'
-          description='Descripción de la oferta del seguro de Responsabilidad Civil con el respaldo de Sura y la asesora Mile Toro'
+          name='description'
+          content='Descripción de la oferta de seguros de Responsabilidad Civil con el respaldo de Sura y la asesoría de Mile Toro'
           />
           </Head>
       <HeroSection 

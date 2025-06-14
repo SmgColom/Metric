@@ -9,10 +9,10 @@ function AgroPage() {
   return (
     <Fragment>
        <Head>
-        <title>SegurosMileToro|Seguro de Agro</title>
+        <title>Seguros Mile Toro|Agro</title>
         <meta 
-          name='Seguros de Agro asesora Mile Toro'
-          description='Descripción de la oferta de los seguros de Agro con el respaldo de Sura y la asesora Mile Toro'
+          name='description'
+          content='Descripción de la oferta de seguros de Agro con el respaldo de Sura y la asesoría de Mile Toro'
           />
           </Head>
       <HeroSection 

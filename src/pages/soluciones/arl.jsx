@@ -9,10 +9,10 @@ function ArlPage() {
   return (
     <Fragment>
        <Head>
-        <title>SegurosMileToro|ARL</title>
+       <title>Seguros Mile Toro|ARL</title>
         <meta 
-          name='Seguros de ARL asesora Mile Toro'
-          description='Descripción de la oferta del seguro ARL con el respaldo de Sura y la asesora Mile Toro'
+          name='description'
+          content='Descripción de la oferta ARL con el respaldo de Sura y la asesoría de Mile Toro'
           />
           </Head>
       <HeroSection 

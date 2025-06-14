@@ -4,7 +4,7 @@ import styles from '@/components/layout/ContactSection/ContactForm.module.scss';
 
 const ContactPage = () => (
 
-  <>
+<>
   <h1 className={styles.title}><span>Contáctame</span></h1>
   <div className={styles.Wrapper}>
       
@@ -20,6 +20,8 @@ const ContactPage = () => (
     </div>
   </div>
   </>
+
+  
 );
 
 export default ContactPage;

@@ -9,10 +9,10 @@ function BienesPage() {
   return (
     <Fragment>
        <Head>
-        <title>SegurosMileToro|Bienes Y Patrimonio</title>
+       <title>Seguros Mile Toro|Bienes</title>
         <meta 
-          name='Seguros de Bienes y Patrimonio asesora Mile Toro'
-          description='Descripción de la oferta de los seguros de Bienes y Patrimonio con el respaldo de Sura y la asesora Mile Toro'
+          name='description'
+          content='Descripción de la oferta de seguros de Bienes y Patrimonio con el respaldo de Sura y la asesoría de Mile Toro'
           />
           </Head>
       <HeroSection 
