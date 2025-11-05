@@ -12,8 +12,8 @@ function Footer() {
           <h4>Quien soy yo</h4>
           <a href="/about">Perfil</a>
           <div className={styles.socialIcons}>
-          <a href="https://instagram.com/mile_toro" title="Instagram" aria-label="Instagram" target="_blank" rel="noopener noreferrer"><GrInstagram  size={20}/></a>
-          <a href="https://www.facebook.com/mile.torogarcia?mibextid=wwXIfr&mibextid=wwXIfr" title="Facebook" aria-label="Facebook" target="_blank" rel="noopener noreferrer"><FaFacebook size={20} /></a>
+          <a href="https://www.instagram.com/miletoroseguros/" title="Instagram" aria-label="Instagram" target="_blank" rel="noopener noreferrer"><GrInstagram  size={20}/></a>
+          <a href="https://www.facebook.com/profile.php?id=61582965730718" title="Facebook" aria-label="Facebook" target="_blank" rel="noopener noreferrer"><FaFacebook size={20} /></a>
         </div>
         </div>
 
