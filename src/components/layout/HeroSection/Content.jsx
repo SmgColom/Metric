@@ -1,45 +1,19 @@
 import styles from './Content.module.scss';
-import { AiFillCheckCircle } from "react-icons/ai";
-import { useRouter } from 'next/navigation';
-import Button from '@/components/common/Button';
 
-function Content({
-
-  description,
-  feature1,
-  feature2,
-  feature3,
-  feature4,
-  feature5,
-  finalmessage
-}) {
-  const router = useRouter();
-
+function Content({ features = [] }) {
   return (
-    <div>
-      {/* Contenido dinámico fuera del banner */}
-      <div className={styles.text}>
-        {description && <p>{description}</p>}
-        <div style ={{marginTop: '2em'}}>
-        {feature1 && <p><AiFillCheckCircle /> {feature1}</p>}
-        {feature2 && <p><AiFillCheckCircle /> {feature2}</p>}
-        {feature3 && <p><AiFillCheckCircle /> {feature3}</p>}
-        {feature4 && <p><AiFillCheckCircle /> {feature4}</p>}
-        {feature5 && <p><AiFillCheckCircle /> {feature5}</p>}
-        </div>
-        <div style ={{marginTop: '2em'}}>
-        {finalmessage && <p>{finalmessage}</p>}
-        </div>
-        
-        </div>
-        <div style={{ textAlign: 'left', marginTop: '20px', marginBottom: '20px', paddingLeft: '2rem' }}>
-          <Button className={styles.button} onClick={() => router.push('/contact')}>
-            Contáctame
-          </Button>
-        </div>
-      
+    <div className={styles.content}>
+      <div className={styles.featuresGrid}>
+        {features.map((feature, index) => (
+          <div key={index} className={styles.card}>
+            <div className={styles.icon}>{feature.icon}</div>
+            <p>{feature.label}</p>
+          </div>
+        ))}
+      </div>
     </div>
   );
 }
 
 export default Content;
+

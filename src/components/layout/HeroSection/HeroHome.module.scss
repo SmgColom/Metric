@@ -2,21 +2,49 @@
 @use '@/styles/scss/abstracts/' as *;
 
 .heroSplit {
+  margin-top: 30px;
   display: flex;
   flex-direction: row;
-  margin-top: 30px;
-  padding: 0rem 2rem 2rem 1rem;
+  justify-content: space-between;
+  padding: 0rem 2rem 0rem 1rem;
   background: no-repeat center/cover;
-  height: auto;
   transition: margin-top 0.3s ease;
   align-items: center;
+  height: auto;
 
-  @media (max-width: 430px) {
-    flex-direction: column;
-    padding: 2rem;
-    text-align: left;
+  @media (min-width: 1024px) and (max-width: 1366px) {
+   align-items: flex-start;
   }
+
+  @media (max-width: 1023px) {
+    flex-direction: column;
+    text-align: center;
+    padding: 0;
+    margin: 0;
+  } 
 }
+
+.imageWrapper {
+  margin-top: 30px;
+  position: relative;
+  width: 500px;
+  height: 500px;
+  overflow: hidden;
+  flex: 1 1 50%;
+  max-width: 40%;
+  border-radius: 20px;
+
+    @media (min-width: 1024px) and (max-width: 1366px) {
+      margin-top: 100px;
+      align-items: center;
+      width: 150px;
+      height: 300px;
+    }
+
+    @media (min-width: 768px) and (max-width: 1023px) {
+      width: 100px;
+    }
+  }
 
 .textContent {
   display: flex;
@@ -27,11 +55,34 @@
   padding: 0rem 2rem 2rem 1.2rem;
   justify-content: flex-start;
 
+    @media (min-width: 1024px) and (max-width: 1366px) {
+    flex: 1 1 80%;
+  }
+
+  @media (min-width: 768px) and (max-width: 1023px) {
+    flex: 1 100%;
+    max-width: 100%;
+  }
+
+  
+
   h1 {
+    margin-bottom:0px;
     font-size: 3.9em;
     font-weight: 400;
     color: $complementaryColor;
     text-align: left;
+
+  @media (max-width: 1366px) {
+  font-size: 3rem;
+  text-align: left;
+  } 
+
+  @media (max-width: 1023px) {
+  font-size: 3rem;
+  text-align: center;
+  align-self: center;
+  } 
   }
 
   span {
@@ -39,102 +90,97 @@
   }
 
   p {
-    margin: 0rem;
     font-size: 1.5em;
     color: $complementaryColor;
     text-align: left;
+    margin-bottom: 0px;
+
+  @media (min-width: 1024px) and (max-width: 1366px) {
+  margin-bottom: 2rem;
+   text-align: left;
+   font-size: 1.4em;
+  }
+
+  @media (max-width: 1023px) {
+  margin-bottom: 2rem;
+  text-align: center;
+  } 
   }
 
   @media (max-width: 430px) {
     max-width: 100%;
     align-items: left;
 
-    h1{
-      text-align: left;
+    h1 {
       font-size: 3em;
     }
 
-    p{
-      text-align: left;
+    p {
       font-size: 1.5em;
-      margin-bottom: 20px;
     }
   }
 }
 
-.imageSide {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  flex: 1 1 50%;
-  max-width: 50%;
-  margin-top: 2rem;
-
-  img {
-    object-position: top;
-    width: 100%;
-    max-height: 420px;
-    aspect-ratio: 1 / 1;
-    border-radius: 10%;
-    object-fit: cover;
-    max-width: fit-content;
-    max-height: fit-content;
-  }
-
-  @media (max-width: 430px) {
-
-    max-width: 100%;
-    margin-top: 0;
-
-    img {
-      height: auto;
-      padding-left: 1rem;
-    }
-  }
-}
 
 .button {
+  margin-top: 0;
   display: flex;
   justify-content: flex-start;
   margin-bottom: 20px;
   padding-left: 2rem;
 
+  @media (max-width: 1023px) {
+    padding-left: 0;
+    align-self: center;
+
+  }
+
   button,
   a {
     padding: 0.6rem 1.2rem;
     text-align: left;
+
   }
 }
 
-@media (max-width: 768px) {
-  .heroSplit {
-    padding-left: 1rem;
+
+@media (max-width: 932px) {
+
+
+  .imageWrapper {
+   width: 100%;
+   max-width: 300px;
+    aspect-ratio: 7 / 7;
+    height: auto;
   }
+
 
   .button {
     padding-left: 3rem;
 
-    @media (max-width: 430px) {
-      padding-left: 2rem;
-      justify-content: left; 
+    @media (max-width: 1023px) {
+    margin-top: 2rem;
+    justify-content: center;
+    padding-left: 0; 
     }
   }
 }
 
+
 @media (min-width: 430px) {
   :global(body.menu-open) .heroSplit {
-    margin-top: 30rem;
+    margin-top: 16rem;
   }
 
   :global(body:not(.menu-open)) .heroSplit {
-    margin-top: 30px;
-    min-height: 60vh;
+    margin-top: 40px;
   }
 
-  .imageSide img {
-    margin-top: 0px;
+  .imageWrapper {
+    width: 90%;
   }
 }
+
 
 
 

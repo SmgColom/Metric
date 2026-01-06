@@ -11,7 +11,7 @@
       <Fragment>
 
 <Head>
-  <title>Salud y Bienestar | Seguros Mile Toro</title>
+  <title>Infórmate | Metric Solutions</title>
   <meta 
     name="description"
     content="Artículos de salud, cuidado personal y bienestar familiar. Aprende cómo proteger tu bienestar físico y mental con nuestros consejos de expertos."
@@ -26,9 +26,9 @@
   <meta property="og:url" content="https://miletoroseguros.vercel.app/news/blog" />
 </Head>
         <HeroSection 
-          title="Salud y Bienestar"
-          description="Encuentra la mejor información para tu cuidado personal y familiar"
-          bgImage="/backgrounds/Bienestar.jpeg"
+          title="Tendencias"
+          description="Encuentra la mejor información del mundo del Running a nivel internacional"
+          bgImage="/backgrounds/Running.jpg"
         />
 
         {WellnessArticles.length > 0 && <ArticlesList articles={WellnessArticles}/>}
@@ -38,7 +38,7 @@
 
   // ngsp
   export const getStaticProps = async () => {
-    const response = await fetch(`https://newsapi.org/v2/everything?q=health+OR+wellness&language=es&pageSize=6&apiKey=${process.env.WELLNESS_API_KEY}`);
+    const response = await fetch(`https://newsapi.org/v2/everything?q=running&language=es&pageSize=6&apiKey=${process.env.WELLNESS_API_KEY}`);
     const data = await response.json();
     const articles = data.articles;
     //console.log(articles);

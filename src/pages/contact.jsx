@@ -15,16 +15,16 @@ const ContactPage = () => (
   />
   <meta property="og:title" content="Contáctame | Mile Toro | Asesora en Seguros Sura" />
   <meta property="og:description" content="¿Tienes dudas o deseas una asesoría personalizada? Contáctame para encontrar juntos las mejores soluciones de seguros con el respaldo de Sura." />
-  <meta property="og:image" content="https://miletoroseguros.vercel.app/public/backgrounds/Logo.jpeg" />
+  <meta property="og:image" content="https://miletoroseguros.vercel.app/public/backgrounds/Logo.png" />
   <meta property="og:type" content="website" />
   <meta property="og:url" content="https://miletoroseguros.vercel.app/contact" />
 
   <meta name="twitter:card" content="summary_large_image" />
   <meta name="twitter:title" content="Contáctame | Mile Toro | Asesora en Seguros Sura" />
   <meta name="twitter:description" content="¿Tienes dudas o deseas una asesoría personalizada? Contáctame para encontrar juntos las mejores soluciones de seguros con el respaldo de Sura." />
-  <meta name="twitter:image" content="https://miletoroseguros.vercel.app/public/backgrounds/Logo.jpeg" />
+  <meta name="twitter:image" content="https://miletoroseguros.vercel.app/public/backgrounds/Logo.jpg" />
 </Head>
-  <h1 className={styles.title}><span>Contáctame</span></h1>
+  <h1 className={styles.title}><span>Contáctanos</span></h1>
   <div className={styles.Wrapper}>
       
     {/* Columna izquierda: Título + Formulario */}

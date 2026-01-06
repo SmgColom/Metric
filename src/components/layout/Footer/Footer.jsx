@@ -9,7 +9,7 @@ function Footer() {
     <div className={styles.footerwrapper}>
       <div className={styles.footerTop}>
         <div className={styles.footerSection}>
-          <h4>Quien soy yo</h4>
+          <h4>Quienes somos</h4>
           <a href="/about">Perfil</a>
           <div className={styles.socialIcons}>
           <a href="https://www.instagram.com/miletoroseguros/" title="Instagram" aria-label="Instagram" target="_blank" rel="noopener noreferrer"><GrInstagram  size={20}/></a>
@@ -37,18 +37,8 @@ function Footer() {
           <a href="/soluciones/arl">ARL</a>
         </div>
 
-        <div className={styles.footerSection}>
-          <h4>Medellín</h4>
-          <a href="https://www.google.com/maps/place/Punto+Clave+-+Centro+Integral+de+Servicios./@6.2297246,-75.5766451,17z/data=!3m1!4b1!4m6!3m5!1s0x8e4429386f2d071b:0x1909cdb657bb546e!8m2!3d6.2297246!4d-75.5740648!16s%2Fg%2F1hm5pfrh_?entry=ttu&g_ep=EgoyMDI1MDYwMS4wIKXMDSoASAFQAw%3D%3D">Calle 27 #46-70, Local 144</a>
-          <p>Centro Comercial Punto Clave</p>
-          <p>302 246 0236</p>
-        </div>
 
-        <div className={styles.logoSection}>
-          <div className={styles.logo}>
-            <img src="/Logo.jpeg" alt="Logo Mile Toro" />
-          </div>
-        </div>
+
       </div>
 
       <div className={styles.footerbottom}>

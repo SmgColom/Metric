@@ -36,7 +36,7 @@
     input,
     textarea {
       padding: 0.5rem;
-      border: 1px solid #ffd700;
+      border: 1px solid $highlightColor;
       border-radius: 6px;
       font-size: 1.5em;
       background-color: #fff;
@@ -45,21 +45,25 @@
     }
 
     button {
-      padding: 0.75rem 2rem;
-      background-color: #232f45;
-      color: white;
-      font-weight: bold;
-      border: none;
-      border-radius: 8px;
+      display: inline-block;
+      padding: 0.5rem 1.5rem;
+      background-color: $complementaryColor;
+      color: #f8f9fa;
+      border: 2px solid $highlightColor;
+      border-radius: 4px;
       cursor: pointer;
       width: fit-content;
       align-self: center;
+      text-align: center;
       box-shadow: 2px 2px 0 #b6d8df;
+      font-family: space grotesk, sans-serif;
+      cursor: pointer;
 
-      &:hover {
-        opacity: 0.9;
-      }
+  &:hover, &:active {
+    background-color: $brandColor;
+    color: $complementaryColor;
     }
+  }
 
     small {
       color: red;

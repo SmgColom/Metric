@@ -27,7 +27,7 @@ function ArticleDetailPage(props) {
 
 // STATIC SITE DYNAMIC PATHS (snippet: "ngspa")
 export const getStaticPaths = async () => {
-  const response = await fetch(`https://newsapi.org/v2/everything?q=health+OR+wellness&language=es&pageSize=6&apiKey=${process.env.WELLNESS_API_KEY}`);
+  const response = await fetch(`https://newsapi.org/v2/everything?q=running&language=es&pageSize=6&apiKey=${process.env.WELLNESS_API_KEY}`);
   const data = await response.json();
   const articles = data.articles;
 
@@ -42,7 +42,7 @@ export const getStaticPaths = async () => {
 }
 
 export const getStaticProps = async (context) => {
-  const response = await fetch(`https://newsapi.org/v2/everything?q=health+OR+wellness&language=es&pageSize=6&apiKey=${process.env.WELLNESS_API_KEY}`);
+  const response = await fetch(`https://newsapi.org/v2/everything?q=running&language=es&pageSize=6&apiKey=${process.env.WELLNESS_API_KEY}`);
   const data = await response.json();
   const articles = data.articles;
 
