@@ -1,0 +1,139 @@
+@use "@/styles/scss/abstracts" as *;
+
+.wrapper {
+  display: flex;
+  flex-direction: column;
+  padding: 2rem 2rem;
+  margin: 0 auto;
+}
+
+.header {
+  margin-bottom: 0rem;
+}
+
+.heroContent {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 4rem;
+
+  @media (max-width: 1023px) {
+    flex-direction: column;
+  }
+}
+
+.textContent {
+  flex: 1;
+  margin-top: 0;
+  align-self: flex-start;
+
+  h2 {
+    font-size: 3.9rem;
+    color: $complementaryColor;
+
+    @media (max-width: 1366px) {
+      font-size: 3rem;
+    }
+
+    @media (max-width: 1023px) {
+      text-align: center;
+    }
+  }
+
+  p {
+    font-size: 1.5rem;
+    color: $complementaryColor;
+    margin-top: 1rem;
+    line-height: 1.5;
+
+    @media (max-width: 1023px) {
+      text-align: center;
+    }
+  }
+}
+
+.mediaWrapper {
+  margin-top: 30px;
+  width: 500px;
+  height: 500px;
+  overflow: hidden;
+  border-radius: 20px;
+}
+
+.video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  object-position: center center;
+}
+
+
+
+.block {
+  margin-bottom: 4rem;
+
+  h3 {
+    font-size: 3rem;
+    color: $complementaryColor;
+    margin-bottom: 2rem;
+  }
+}
+
+.cards {
+  background-color: $primaryColor;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 2rem;
+
+  @media (max-width: 1024px) {
+    grid-template-columns: 1fr;
+  }
+}
+
+.card {
+  background: #ffffff;
+  border-radius: 18px;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  transition: transform 0.25s ease;
+
+  &:hover {
+    transform: translateY(-6px);
+  }
+
+  h4 {
+    font-size: 1.4rem;
+    color: $complementaryColor;
+    margin-bottom: 1rem;
+  }
+
+  ul {
+    padding-left: 1.2rem;
+  }
+
+  li {
+    margin-bottom: 0.6rem;
+    color: $complementaryColor;
+    line-height: 1.5;
+  }
+}
+
+.cardAlt {
+  background: #ffffff;
+  color: $complementaryColor;
+  border-radius: 18px;
+  padding: 2rem;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+
+  h4 {
+    font-size: 1.4rem;
+    margin-bottom: 0.8rem;
+    color: $complementaryColor;
+  }
+
+  p {
+    line-height: 1.6;
+    color: $complementaryColor;
+  }
+}
+

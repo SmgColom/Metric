@@ -63,7 +63,7 @@ function Header() {
         <ul>
           <li><Link href="/" onClick={() => setMenuOpen(false)}>Inicio</Link></li>
           <li><Link href="/about" onClick={() => setMenuOpen(false)}>Quienes Somos</Link></li>
-          <li><Link href="/news/blog" onClick={() => setMenuOpen(false)}>Nuestros Servicios</Link></li>
+          <li><Link href="/servicios/servicios" onClick={() => setMenuOpen(false)}>Nuestros Servicios</Link></li>
           <li><Link href="/news/blog" onClick={() => setMenuOpen(false)}>Infórmate</Link></li>
           <li><Link href="/contact" onClick={() => setMenuOpen(false)}>Contáctanos</Link></li>
         </ul>
