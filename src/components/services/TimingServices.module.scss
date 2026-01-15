@@ -91,11 +91,11 @@
 }
 
 .card {
-  background: #ffffff;
+  background: $brandColor;
   border-radius: 18px;
   padding: 2rem;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-  transition: transform 0.25s ease;
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 
   &:hover {
     transform: translateY(-6px);
@@ -119,11 +119,16 @@
 }
 
 .cardAlt {
-  background: #ffffff;
+  background: $brandColor;
   color: $complementaryColor;
   border-radius: 18px;
   padding: 2rem;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+  
+    &:hover {
+    transform: translateY(-6px);
+  }
 
   h4 {
     font-size: 1.4rem;
