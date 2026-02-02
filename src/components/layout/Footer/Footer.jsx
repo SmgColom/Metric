@@ -17,25 +17,9 @@ function Footer() {
         </div>
         </div>
 
-        <div className={styles.footerSection}>
-          <h4>Soluciones para Personas</h4>
-          <a href="/soluciones/vida">Vida Individual</a>
-          <a href="/soluciones/salud">Salud Familiar</a>
-          <a href="/soluciones/movilidad">Movilidad</a>
-          <a href="/soluciones/hogar">Hogar</a>
-        </div>
 
-        <div className={styles.footerSection}>
-          <h4>Soluciones para Empresas</h4>
-          <a href="/soluciones/multiriesgo">Multiriesgo empresarial</a>
-          <a href="/soluciones/responsabilidad">Responsabilidad Civil</a>
-          <a href="/soluciones/transporte">Transporte</a>
-          <a href="/soluciones/cumplimiento">Cumplimiento</a>
-          <a href="/soluciones/bienes">Bienes y Patrimonio</a>
-          <a href="/soluciones/construccion">Todo Riesgo Construcción</a>
-          <a href="/soluciones/agro">Agro</a>
-          <a href="/soluciones/arl">ARL</a>
-        </div>
+
+ 
 
 
 

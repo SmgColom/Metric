@@ -3,6 +3,7 @@ import Head from 'next/head';
 import HeroHome from '@/components/layout/HeroSection/HeroHome';
 
 function HomePage() {
+  
   return (
     <Fragment>
        <Head>
@@ -34,6 +35,7 @@ function HomePage() {
     { src: "/Carreras5.png", alt: "Imagen entrevista corredores" },
   ]}
 />
+
     </Fragment>
   )
 }

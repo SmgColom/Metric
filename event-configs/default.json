@@ -1,0 +1,27 @@
+{
+  "lang": "es",
+
+  "branding": {
+    "logo": "/events/default/logo.png",
+    "heroImage": "/events/default/hero.jpg"
+  },
+
+  "theme": {
+    "primary": "#00E676",
+    "secondary": "#0B1220",
+    "bg": "#FFFFFF",
+    "text": "#0B1220"
+  },
+
+  "modules": [
+    { "type": "hero", "enabled": true },
+    { "type": "distances", "enabled": true },
+    { "type": "resultsPreview", "enabled": true, "limit": 10 }
+  ],
+
+  "seo": {
+    "title": "Resultados de eventos deportivos",
+    "description": "Cronometraje y resultados oficiales",
+    "ogImage": "/events/default/og.jpg"
+  }
+}
