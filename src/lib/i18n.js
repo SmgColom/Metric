@@ -1,3 +1,5 @@
+// src/lib/i18n.js
+
 export const feibotI18n = {
   es: {
     // meta
@@ -136,6 +138,45 @@ export const feibotI18n = {
     "race.scores[].net_bicycle": "Ciclismo (neto)",
     "race.scores[].net_t2": "Transición 2 (neto)",
     "race.scores[].net_running": "Running (neto)",
+
+    // ==========================
+    // ✅ ALIASES para UI (keys planas)
+    // ==========================
+    "bib": "Dorsal",
+    "name": "Nombre",
+    "sex": "Sexo",
+    "gender": "Género",
+    "city": "Ciudad",
+    "country": "País",
+    "team": "Equipo",
+    "phone": "Teléfono",
+    "email": "Email",
+    "age": "Edad",
+    "age_group": "Grupo de edad",
+    "age_group2": "Grupo de edad 2",
+    "age_group_2": "Grupo de edad 2",
+    "epc": "Chip (EPC)",
+    "id_card": "Documento",
+    "item_id": "ID categoría",
+    "item_name": "Categoría",
+    "finisher": "Finalizó",
+    "check_in": "Check-in",
+    "start_time": "Salida (neto)",
+    "finish_time": "Hora de llegada",
+    "total_score": "Tiempo oficial (Gun/Total)",
+    "net_score": "Tiempo neto",
+    "pace": "Ritmo",
+    "diff": "Diferencia",
+
+    // ✅ Ranking calculado por nosotros
+    "category_rank": "Posición en la categoría",
+
+    // ✅ Encabezados de parciales (tabla runner)
+    "split_point": "Punto",
+    "split_distance": "Distancia",
+    "split_time_total": "Tiempo",
+    "split_time_lap": "Tiempo parcial",
+    "split_pace": "Ritmo",
   },
 
   en: {
@@ -262,7 +303,42 @@ export const feibotI18n = {
     "race.scores[].net_bicycle": "Bike (net)",
     "race.scores[].net_t2": "Transition 2 (net)",
     "race.scores[].net_running": "Run (net)",
-  }
+
+    // ✅ ALIASES para UI (keys planas)
+    "bib": "Bib",
+    "name": "Name",
+    "sex": "Sex",
+    "gender": "Gender",
+    "city": "City",
+    "country": "Country",
+    "team": "Team",
+    "phone": "Phone",
+    "email": "Email",
+    "age": "Age",
+    "age_group": "Age group",
+    "age_group2": "Age group 2",
+    "age_group_2": "Age group 2",
+    "epc": "Chip (EPC)",
+    "id_card": "ID card",
+    "item_id": "Category ID",
+    "item_name": "Category",
+    "finisher": "Finisher",
+    "check_in": "Check-in",
+    "start_time": "Start (net)",
+    "finish_time": "Finish time",
+    "total_score": "Official time (gun/total)",
+    "net_score": "Net time",
+    "pace": "Pace",
+    "diff": "Diff",
+
+    "category_rank": "Category position",
+
+    "split_point": "Point",
+    "split_distance": "Distance",
+    "split_time_total": "Time",
+    "split_time_lap": "Split time",
+    "split_pace": "Pace",
+  },
 };
 
 export const scoreTypeLabel = {
@@ -283,16 +359,37 @@ export const scoreTypeLabel = {
     cp3: "Checkpoint 3",
     cp4: "Checkpoint 4",
     cp5: "Checkpoint 5",
-  }
+  },
 };
+
 export const yesNo = {
   es: { 0: "No", 1: "Sí" },
-  en: { 0: "No", 1: "Yes" }
+  en: { 0: "No", 1: "Yes" },
 };
+
 export const sortLabel = {
   es: { ASC: "Ascendente", DESC: "Descendente" },
-  en: { ASC: "Ascending", DESC: "Descending" }
+  en: { ASC: "Ascending", DESC: "Descending" },
 };
+
+/**
+ * Traducción con fallback:
+ * - si no existe "bib" busca "race.scores[].bib"
+ * - si no existe "age_group2" busca "race.scores[].age_group_2"
+ */
 export function t(key, lang = "es") {
-  return feibotI18n?.[lang]?.[key] ?? key;
+  const dict = feibotI18n?.[lang] ?? {};
+  if (dict[key]) return dict[key];
+
+  const fallbacks = [
+    `race.scores[].${key}`,
+    key === "age_group2" ? "race.scores[].age_group_2" : null,
+    key === "age_group_2" ? "race.scores[].age_group_2" : null,
+  ].filter(Boolean);
+
+  for (const fb of fallbacks) {
+    if (dict[fb]) return dict[fb];
+  }
+
+  return key;
 }

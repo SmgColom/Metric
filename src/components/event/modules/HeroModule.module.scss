@@ -1,0 +1,29 @@
+.live {
+  font-weight: 800;
+  color: #e53935; // rojo vivo
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.live::before {
+  content: "";
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #e53935;
+  animation: pulse 1.4s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.3;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
