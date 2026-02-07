@@ -74,11 +74,11 @@ export async function getServerSideProps({ params, query }) {
     const q = (query.q ?? "").toString().trim();
     const itemId = query.itemId ? toInt(query.itemId, null) : null;
 
-    // 3) Feibot + normalización base (race/items/stats)
+    // 3) Feibot + normalización base
     const raw = await fetchFeibotRace(config.feibot.publicKey);
     const base = normalizeFeibot(raw);
 
-    // 4) Scores (limpiar textos aquí porque raw.scores se usa directo)
+    // 4) Scores (limpieza textos)
     const allScoresRaw = Array.isArray(raw?.scores) ? raw.scores : [];
     const allScores = allScoresRaw.map((r) => ({
       ...r,
@@ -86,7 +86,7 @@ export async function getServerSideProps({ params, query }) {
       item_name: fixText(r?.item_name),
       city: fixText(r?.city),
       country: fixText(r?.country),
-      team: fixText(r?.team)
+      team: fixText(r?.team),
     }));
 
     // 5) Ranking real por categoría (tiempo neto asc)
@@ -116,12 +116,12 @@ export async function getServerSideProps({ params, query }) {
       ? allScores.filter((r) => Number(r?.item_id) === Number(itemId))
       : allScores;
 
-    // 7) Orden base: menor tiempo neto primero (ranking)
+    // 7) Orden base: menor tiempo neto primero
     let filtered = [...filteredBase].sort(
       (a, b) => timeToSeconds(getTimeValue(a)) - timeToSeconds(getTimeValue(b))
     );
 
-    // 8) Búsqueda (nombre / bib / doc)
+    // 8) Búsqueda
     if (q) {
       const qq = q.toLowerCase();
       filtered = filtered.filter((r) => {
@@ -139,7 +139,7 @@ export async function getServerSideProps({ params, query }) {
     const start = (safePage - 1) * pageSize;
     const rows = filtered.slice(start, start + pageSize);
 
-    // 10) Enriquecer filas con Posición categoría (rankMap)
+    // 10) Enriquecer filas con Posición categoría
     const rowsWithRank = rows.map((r) => {
       const catId = Number(r?.item_id ?? 0);
       const bib = String(r?.bib ?? "");
@@ -158,8 +158,8 @@ export async function getServerSideProps({ params, query }) {
         pageSize,
         totalPages,
         q,
-        itemId
-      }
+        itemId,
+      },
     };
 
     return { props: { config, data } };
@@ -168,8 +168,8 @@ export async function getServerSideProps({ params, query }) {
       props: {
         error: error?.message ?? "Error cargando resultados",
         config: null,
-        data: null
-      }
+        data: null,
+      },
     };
   }
 }
@@ -200,7 +200,7 @@ export default function ResultsPage({ config, data, error }) {
         page: meta.page,
         pageSize: meta.pageSize,
         q: meta.q,
-        itemId: meta.itemId
+        itemId: meta.itemId,
       },
       patch
     );
@@ -220,7 +220,7 @@ export default function ResultsPage({ config, data, error }) {
             gap: 12,
             flexWrap: "wrap",
             alignItems: "center",
-            marginBottom: 16
+            marginBottom: 16,
           }}
         >
           {/* búsqueda */}
@@ -240,7 +240,7 @@ export default function ResultsPage({ config, data, error }) {
                 padding: "10px 12px",
                 borderRadius: 10,
                 border: "1px solid #ddd",
-                minWidth: 260
+                minWidth: 260,
               }}
             />
             <button
@@ -251,7 +251,7 @@ export default function ResultsPage({ config, data, error }) {
                 border: "1px solid #ddd",
                 background: "var(--primary)",
                 color: "white",
-                cursor: "pointer"
+                cursor: "pointer",
               }}
             >
               Buscar
@@ -279,7 +279,7 @@ export default function ResultsPage({ config, data, error }) {
               style={{
                 padding: "10px 12px",
                 borderRadius: 10,
-                border: "1px solid #ddd"
+                border: "1px solid #ddd",
               }}
             >
               <option value="all">Todas</option>
@@ -302,7 +302,7 @@ export default function ResultsPage({ config, data, error }) {
               style={{
                 padding: "10px 12px",
                 borderRadius: 10,
-                border: "1px solid #ddd"
+                border: "1px solid #ddd",
               }}
             >
               {[10, 25, 50, 100].map((n) => (
@@ -321,10 +321,18 @@ export default function ResultsPage({ config, data, error }) {
 
         {/* tabla */}
         <div style={{ overflowX: "auto" }}>
-          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 820 }}>
+          <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 980 }}>
             <thead>
               <tr>
-                {["#", "Pos. Cat.", "Nombre", "Bib", "Categoría", "Tiempo (neto/oficial)"].map((h) => (
+                {[
+                  "#",
+                  "Pos. Cat.",
+                  "Nombre",
+                  "Bib",
+                  "Categoría",
+                  "Tiempo (neto/oficial)",
+                  "Certificado",
+                ].map((h) => (
                   <th
                     key={h}
                     style={{
@@ -333,7 +341,7 @@ export default function ResultsPage({ config, data, error }) {
                       borderBottom: "1px solid #eee",
                       fontSize: 13,
                       opacity: 0.8,
-                      whiteSpace: "nowrap"
+                      whiteSpace: "nowrap",
                     }}
                   >
                     {h}
@@ -347,9 +355,15 @@ export default function ResultsPage({ config, data, error }) {
                 const absoluteIndex = (meta.page - 1) * meta.pageSize + idx + 1;
                 const time = r?.net_score ?? r?.total_score ?? "";
                 const bib = r?.bib ?? "";
+                const bibStr = String(bib);
+
+                const runnerHref = `/e/${config.eventKey}/runner/${encodeURIComponent(bibStr)}`;
+                const certificateHref = `/e/${config.eventKey}/runner/${encodeURIComponent(
+                  bibStr
+                )}/certificate`;
 
                 return (
-                  <tr key={r.id ?? `${bib}-${idx}`}>
+                  <tr key={r.id ?? `${bibStr}-${idx}`}>
                     <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>
                       {absoluteIndex}
                     </td>
@@ -360,10 +374,7 @@ export default function ResultsPage({ config, data, error }) {
 
                     <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>
                       {bib ? (
-                        <Link
-                          href={`/e/${config.eventKey}/runner/${encodeURIComponent(String(bib))}`}
-                          style={{ fontWeight: 800, textDecoration: "none" }}
-                        >
+                        <Link href={runnerHref} style={{ fontWeight: 800, textDecoration: "none" }}>
                           {r?.name ?? "-"}
                         </Link>
                       ) : (
@@ -372,7 +383,7 @@ export default function ResultsPage({ config, data, error }) {
                     </td>
 
                     <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>
-                      {bib || "-"}
+                      {bibStr || "-"}
                     </td>
 
                     <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>
@@ -382,13 +393,35 @@ export default function ResultsPage({ config, data, error }) {
                     <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>
                       {time || "-"}
                     </td>
+
+                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>
+                      {bib ? (
+                        <Link
+                          href={certificateHref}
+                          style={{
+                            fontWeight: 900,
+                            textDecoration: "none",
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 8,
+                            padding: "6px 10px",
+                            borderRadius: 10,
+                            border: "1px solid #ddd",
+                          }}
+                        >
+                          Descargar
+                        </Link>
+                      ) : (
+                        <span style={{ opacity: 0.6 }}>—</span>
+                      )}
+                    </td>
                   </tr>
                 );
               })}
 
               {rows.length === 0 ? (
                 <tr>
-                  <td colSpan={6} style={{ padding: 18, opacity: 0.7 }}>
+                  <td colSpan={7} style={{ padding: 18, opacity: 0.7 }}>
                     No hay resultados para estos filtros.
                   </td>
                 </tr>
@@ -432,6 +465,8 @@ export default function ResultsPage({ config, data, error }) {
     </EventShell>
   );
 }
+
+
 
 
 

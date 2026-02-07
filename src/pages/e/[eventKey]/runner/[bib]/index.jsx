@@ -1,4 +1,3 @@
-// src/pages/e/[eventKey]/runner/[bib].jsx
 import Link from "next/link";
 import EventShell from "@/components/event/EventShell";
 
@@ -8,39 +7,24 @@ import { normalizeFeibot } from "@/lib/normalizeFeibot";
 
 import { feibotI18n } from "@/lib/i18n";
 
-// ===== i18n Helpers =====
-const t = feibotI18n?.es ?? {};
+// ===== i18n helpers =====
+const dictES = feibotI18n?.es ?? {};
 function tKey(key) {
-  return t[key] ?? key;
+  return dictES[key] ?? key;
 }
 
-// ===== Text cleanup (mojibake + separadores) =====
-function fixText(input) {
-  if (input === null || input === undefined) return input;
-  if (typeof input !== "string") return input;
-
-  const s = input.trim();
-  if (!s) return s;
-
-  // Mojibake típico: Ã¡ Ã± Â…
-  const looksBroken = /Ã.|Â./.test(s);
-  let out = s;
-
-  if (looksBroken) {
-    try {
-      // SSR: Buffer existe
-      out = Buffer.from(s, "latin1").toString("utf8");
-    } catch {
-      out = s;
-    }
-  }
-
-  // Limpieza: algunos nombres llegan con ';' o separadores raros
-  out = out.replace(/;/g, " ").replace(/\s+/g, " ").trim();
-  return out;
+// ===== Helpers =====
+function safeStr(v) {
+  if (v === undefined || v === null || v === "") return "-";
+  return String(v);
 }
 
-// ===== Time helpers =====
+function isScalar(v) {
+  if (v === null || v === undefined) return false;
+  const type = typeof v;
+  return type === "string" || type === "number" || type === "boolean";
+}
+
 function timeToSeconds(t) {
   if (!t) return Number.POSITIVE_INFINITY;
   const s = String(t).trim();
@@ -57,39 +41,22 @@ function getTimeValue(r) {
   return r?.net_score ?? r?.total_score ?? "";
 }
 
-function safeStr(v) {
-  if (v === undefined || v === null || v === "") return "-";
-  return String(v);
+/**
+ * Resolver valores especiales:
+ * - "race.items[].title" no existe como key en runner, pero el valor real está en runner.item_name
+ * - "category_rank" es calculado, no viene del runner
+ */
+function getRunnerValue(runner, key, categoryRank) {
+  if (key === "race.items[].title") return runner?.item_name;
+  if (key === "category_rank") return categoryRank;
+  return runner?.[key];
 }
 
-function isScalar(v) {
-  if (v === null || v === undefined) return false;
-  const type = typeof v;
-  return type === "string" || type === "number" || type === "boolean";
-}
-
-// ===== Pace normalization =====
-// Queremos mostrar en formato min:seg / km cuando sea posible.
-function normalizePaceValue(v) {
-  if (v === undefined || v === null || v === "") return "";
-
-  // Si ya viene como "4:35" o "04:35"
-  const s = String(v).trim();
-  if (/^\d{1,2}:\d{2}$/.test(s)) return `${s} /km`;
-  if (/^\d{1,2}:\d{2}\/km$/i.test(s)) return s;
-
-  // Si viene en segundos por km (ej 275)
-  const asNum = Number(s);
-  if (Number.isFinite(asNum) && asNum > 0) {
-    const totalSec = Math.round(asNum);
-    const mm = Math.floor(totalSec / 60);
-    const ss = totalSec % 60;
-    const ss2 = String(ss).padStart(2, "0");
-    return `${mm}:${ss2} /km`;
-  }
-
-  // Si viene con texto raro, lo dejamos tal cual
-  return s;
+// Genera filas [labelTraducido, value] usando tu i18n
+function buildFields(runner, keys, categoryRank) {
+  return keys
+    .map((k) => [tKey(k), getRunnerValue(runner, k, categoryRank)])
+    .filter(([, v]) => isScalar(v) && String(v) !== "");
 }
 
 // Detecta si runner trae parciales en algún campo típico
@@ -118,38 +85,12 @@ function normalizeSplit(x, idx) {
   const pace = x?.pace ?? x?.lap_pace ?? x?.split_pace ?? "";
 
   return {
-    point: safeStr(fixText(point)),
+    point: safeStr(point),
     distance: distance === "" ? "-" : safeStr(distance),
     time: safeStr(time),
     lapTime: safeStr(lapTime),
-    pace: pace ? normalizePaceValue(pace) : "-"
+    pace: safeStr(pace),
   };
-}
-
-/**
- * Resolver valores especiales:
- * - "race.items[].title" -> runner.item_name
- * - "category_rank" -> calculado
- * - "pace" -> normalizado a min/km si posible
- */
-function getRunnerValue(runner, key, categoryRank) {
-  if (key === "race.items[].title") return runner?.item_name;
-  if (key === "category_rank") return categoryRank;
-
-  if (key === "pace") {
-    const p = runner?.pace;
-    const norm = normalizePaceValue(p);
-    return norm || "";
-  }
-
-  return runner?.[key];
-}
-
-// Genera filas [labelTraducido, value] usando tu i18n
-function buildFields(runner, keys, categoryRank) {
-  return keys
-    .map((k) => [tKey(k), getRunnerValue(runner, k, categoryRank)])
-    .filter(([, v]) => isScalar(v) && String(v) !== "");
 }
 
 export async function getServerSideProps({ params }) {
@@ -162,44 +103,23 @@ export async function getServerSideProps({ params }) {
     const raw = await fetchFeibotRace(config.feibot.publicKey);
     const base = normalizeFeibot(raw);
 
-    const allScoresRaw = Array.isArray(raw?.scores) ? raw.scores : [];
-
-    // ✅ LIMPIAMOS textos aquí (igual que en results.jsx)
-    const allScores = allScoresRaw.map((r) => ({
-      ...r,
-      name: fixText(r?.name),
-      item_name: fixText(r?.item_name),
-      city: fixText(r?.city),
-      country: fixText(r?.country),
-      team: fixText(r?.team)
-    }));
-
-    const runner0 = allScores.find((r) => String(r?.bib ?? "") === String(bib));
-    if (!runner0) return { notFound: true };
+    const allScores = raw?.scores ?? [];
+    const runner = allScores.find((r) => String(r?.bib ?? "") === String(bib));
+    if (!runner) return { notFound: true };
 
     // Ranking en su categoría (por tiempo neto)
-    const catId = Number(runner0?.item_id ?? 0);
+    const catId = Number(runner?.item_id ?? 0);
     const sameCategory = allScores.filter((r) => Number(r?.item_id ?? 0) === catId);
 
-    const sorted = [...sameCategory].sort(
-      (a, b) => timeToSeconds(getTimeValue(a)) - timeToSeconds(getTimeValue(b))
-    );
+    const sorted = [...sameCategory].sort((a, b) => {
+      return timeToSeconds(getTimeValue(a)) - timeToSeconds(getTimeValue(b));
+    });
 
     const categoryRank = sorted.findIndex((r) => String(r?.bib ?? "") === String(bib)) + 1;
 
     // Parciales desde runner (si existen)
-    const splitsRaw = extractSplitsFromRunner(runner0);
+    const splitsRaw = extractSplitsFromRunner(runner);
     const splits = Array.isArray(splitsRaw) ? splitsRaw.map(normalizeSplit) : [];
-
-    // ✅ Runner final limpio
-    const runner = {
-      ...runner0,
-      name: fixText(runner0?.name),
-      item_name: fixText(runner0?.item_name),
-      city: fixText(runner0?.city),
-      country: fixText(runner0?.country),
-      team: fixText(runner0?.team)
-    };
 
     return {
       props: {
@@ -207,8 +127,9 @@ export async function getServerSideProps({ params }) {
         data: base,
         runner,
         categoryRank: categoryRank > 0 ? categoryRank : null,
-        splits
-      }
+        splits,
+        eventKey, // ✅ IMPORTANTE para armar links correctos
+      },
     };
   } catch (error) {
     return {
@@ -218,14 +139,15 @@ export async function getServerSideProps({ params }) {
         data: null,
         runner: null,
         categoryRank: null,
-        splits: []
-      }
+        splits: [],
+        eventKey: null,
+      },
     };
   }
 }
 
-export default function RunnerDetailPage({ config, data, runner, categoryRank, splits, error }) {
-  if (error || !config || !runner) {
+export default function RunnerDetailPage({ config, data, runner, categoryRank, splits, error, eventKey }) {
+  if (error || !config || !runner || !eventKey) {
     return (
       <div style={{ padding: 24 }}>
         <h1>Corredor no disponible</h1>
@@ -237,15 +159,16 @@ export default function RunnerDetailPage({ config, data, runner, categoryRank, s
     );
   }
 
-  const backHref = `/e/${config.eventKey}/results`;
+  // ✅ Links correctos SIEMPRE usando eventKey del route
+  const resultsHref = `/e/${eventKey}/results`;
+  const certificateHref = `/e/${eventKey}/runner/${encodeURIComponent(runner?.bib ?? "")}/certificate`;
 
-  // ✅ Keys (labels salen de i18n.js)
   const leftKeys = ["bib", "name", "gender", "age_group", "age_group2", "race.items[].title", "status"];
 
   const rightKeys = [
     "total_score",
     "net_score",
-    "pace", // ✅ Ritmo
+    "pace",
     "category_rank",
     "overall_gun_rank",
     "overall_chip_rank",
@@ -254,7 +177,7 @@ export default function RunnerDetailPage({ config, data, runner, categoryRank, s
     "age_group_gun_rank",
     "age_group_chip_rank",
     "age_group2_gun_rank",
-    "age_group2_chip_rank"
+    "age_group2_chip_rank",
   ];
 
   const leftRows = buildFields(runner, leftKeys, categoryRank);
@@ -263,15 +186,43 @@ export default function RunnerDetailPage({ config, data, runner, categoryRank, s
   return (
     <EventShell config={config} data={data}>
       <section style={{ paddingTop: 10 }}>
-        <Link href={backHref} style={{ display: "inline-block", padding: "8px 0" }}>
-          ← Volver a resultados
-        </Link>
+        {/* Acciones superiores */}
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
+          <Link
+            href={resultsHref}
+            style={{
+              padding: "8px 12px",
+              borderRadius: 10,
+              border: "1px solid #ddd",
+              textDecoration: "none",
+              fontWeight: 800,
+              display: "inline-block",
+            }}
+          >
+            ← Volver a resultados
+          </Link>
+
+          <Link
+            href={certificateHref}
+            style={{
+              padding: "8px 12px",
+              borderRadius: 10,
+              background: "var(--primary)",
+              color: "#0B1220",
+              textDecoration: "none",
+              fontWeight: 900,
+              display: "inline-block",
+            }}
+          >
+            Descargar certificado
+          </Link>
+        </div>
 
         <h1 style={{ margin: "8px 0 12px" }}>
           {runner?.name ? safeStr(runner.name) : "Detalle del corredor"}
         </h1>
 
-        {/* Resumen en 2 columnas */}
+        {/* Resumen */}
         <div
           style={{
             display: "grid",
@@ -279,7 +230,7 @@ export default function RunnerDetailPage({ config, data, runner, categoryRank, s
             gap: 18,
             alignItems: "start",
             marginTop: 10,
-            marginBottom: 16
+            marginBottom: 16,
           }}
         >
           <InfoTable title="Información" rows={leftRows} />
@@ -303,7 +254,7 @@ export default function RunnerDetailPage({ config, data, runner, categoryRank, s
                         borderBottom: "1px solid #eee",
                         fontSize: 13,
                         opacity: 0.8,
-                        whiteSpace: "nowrap"
+                        whiteSpace: "nowrap",
                       }}
                     >
                       {tKey(k)}
@@ -338,9 +289,7 @@ export default function RunnerDetailPage({ config, data, runner, categoryRank, s
 function InfoTable({ title, rows }) {
   return (
     <div style={{ border: "1px solid #eee", borderRadius: 14, overflow: "hidden" }}>
-      <div style={{ padding: "12px 14px", borderBottom: "1px solid #eee", fontWeight: 800 }}>
-        {title}
-      </div>
+      <div style={{ padding: "12px 14px", borderBottom: "1px solid #eee", fontWeight: 800 }}>{title}</div>
 
       <div style={{ display: "grid" }}>
         {rows.map(([label, value]) => (
@@ -351,17 +300,18 @@ function InfoTable({ title, rows }) {
               gridTemplateColumns: "220px 1fr",
               gap: 12,
               padding: "10px 14px",
-              borderBottom: "1px solid #f3f3f3"
+              borderBottom: "1px solid #f3f3f3",
             }}
           >
             <div style={{ fontWeight: 700, opacity: 0.8 }}>{label}</div>
-            <div style={{ fontWeight: 600 }}>{safeStr(value)}</div>
+            <div style={{ fontWeight: 700 }}>{safeStr(value)}</div>
           </div>
         ))}
       </div>
     </div>
   );
 }
+
 
 
 

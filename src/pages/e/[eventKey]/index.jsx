@@ -93,7 +93,7 @@ export default function EventPage({ config, data, summary, error }) {
     );
   }
 
-  // Enriquecemos data con summary para que tus módulos lo puedan usar
+  
   const enrichedData = { ...data, summary };
 
   return (

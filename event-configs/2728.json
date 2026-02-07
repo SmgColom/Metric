@@ -24,8 +24,7 @@
   "nav": [
     { "label": "Inicio", "href": "./" },
     { "label": "Resultados", "href": "./results" },
-    { "label": "En vivo", "href": "./live" },
-    { "label": "Certificados", "href": "./certificates" }
+    { "label": "En vivo", "href": "./live" }
   ],
 
   "modules": [
@@ -34,4 +33,3 @@
     { "type": "resultsPreview", "enabled": true, "limit": 10 }
   ]
 }
-
