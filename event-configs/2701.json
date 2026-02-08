@@ -1,18 +1,18 @@
 {
-  "eventKey": "2728",
+  "eventKey": "2701",
   "feibot": {
-    "raceId": 2728,
-    "publicKey": "QvDSaZmLM8",
-    "scoresUrl": "https://time.feibot.com/api/scores-data/QvDSaZmLM8"
+    "raceId": 2701,
+    "publicKey": "C3JcZub90e",
+    "scoresUrl": "https://time.feibot.com/api/scores-data/C3JcZub90e"
   },
   "lang": "es",
   "branding": {
     "nameOverride": null,
-    "logo": "/events/2728/logo.png",
-    "heroImage": "/events/2728/banner.png"
+    "logo": "/events/2701/Logo.png",
+    "heroImage": "/events/2701/Banner.png"
   },
   "seo": {
-    "title": "Carrera Corazón Quindío 2025",
+    "title": "Chequeo MRT 6K",
     "description": "Resultados oficiales, tiempos en vivo y certificados.",
     "ogImage": "/events/2728/og.jpg"
   },
@@ -29,7 +29,7 @@
   "certificate": {
     "enabled": true,
     "template": {
-      "src": "/events/2728/certificates/template.png",
+      "src": "/events/2701/certificates/template.png",
       "width": 1365,
       "height": 2048
     },

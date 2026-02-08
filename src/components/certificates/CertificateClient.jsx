@@ -76,6 +76,7 @@ function CertificatePDF({ runner, categoryRank, templateSrc, pageWidth, pageHeig
                   top: Number(f.y ?? 0),
                   fontSize: Number(f.fontSize ?? 28),
                   fontWeight: f.fontWeight ?? 700,
+                  color: f.color ?? "#0B1220",
                 }}
               >
                 {text}
@@ -283,16 +284,16 @@ export default function CertificateClient({ config, data, runner, categoryRank }
 
                   return (
                     <div
-                      key={f.key}
-                      style={{
+                    key={f.key}
+                    style={{
                         position: "absolute",
                         left: Math.round(Number(f.x ?? 0) * zoom),
                         top: Math.round(Number(f.y ?? 0) * zoom),
                         fontSize: Math.round(Number(f.fontSize ?? 28) * zoom),
                         fontWeight: f.fontWeight ?? 700,
-                        color: "#0B1220",
+                        color: f.color ?? "#FFFFFF", 
                         whiteSpace: "pre",
-                      }}
+                    }}
                     >
                       {text}
                     </div>

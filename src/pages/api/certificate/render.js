@@ -67,7 +67,16 @@ export default async function handler(req, res) {
     if (!config?.feibot?.publicKey) return res.status(404).json({ error: "Evento sin publicKey" });
 
     // 2) traer data
-    const raw = await fetchFeibotRace(config.feibot.publicKey);
+    const baseUrl =
+  process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
+const res = await fetch(
+  `${baseUrl}/api/feibot/${config.feibot.publicKey}`
+);
+
+if (!res.ok) throw new Error("Feibot API failed");
+
+const raw = await res.json();
     const allScores = raw?.scores ?? [];
     const runner = allScores.find((r) => String(r?.bib ?? "") === String(bib));
     if (!runner) return res.status(404).json({ error: "Corredor no encontrado" });

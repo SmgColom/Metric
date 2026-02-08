@@ -100,7 +100,16 @@ export async function getServerSideProps({ params }) {
     const config = loadEventConfig(eventKey);
     if (!config?.feibot?.publicKey) return { notFound: true };
 
-    const raw = await fetchFeibotRace(config.feibot.publicKey);
+    const baseUrl =
+  process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
+const res = await fetch(
+  `${baseUrl}/api/feibot/${config.feibot.publicKey}`
+);
+
+if (!res.ok) throw new Error("Feibot API failed");
+
+const raw = await res.json();
     const base = normalizeFeibot(raw);
 
     const allScores = raw?.scores ?? [];

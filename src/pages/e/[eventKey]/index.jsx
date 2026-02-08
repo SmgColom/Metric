@@ -32,7 +32,16 @@ export async function getServerSideProps({ params }) {
     }
 
     // 3) Llamar API pública de Feibot
-    const raw = await fetchFeibotRace(config.feibot.publicKey);
+    const baseUrl =
+  process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
+const res = await fetch(
+  `${baseUrl}/api/feibot/${config.feibot.publicKey}`
+);
+
+if (!res.ok) throw new Error("Feibot API failed");
+
+const raw = await res.json();
 
     // 4) Normalizar y reducir payload (clave para que no pese 2MB+)
     const data = normalizeFeibot(raw);

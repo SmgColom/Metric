@@ -92,7 +92,16 @@ export async function getServerSideProps({ params }) {
       };
     }
 
-    const raw = await fetchFeibotRace(config.feibot.publicKey);
+    const baseUrl =
+  process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+
+const res = await fetch(
+  `${baseUrl}/api/feibot/${config.feibot.publicKey}`
+);
+
+if (!res.ok) throw new Error("Feibot API failed");
+
+const raw = await res.json();
     const base = normalizeFeibot(raw);
 
     const allScoresRaw = Array.isArray(raw?.scores) ? raw.scores : [];
