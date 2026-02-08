@@ -1,35 +1,47 @@
 {
   "eventKey": "2728",
-
   "feibot": {
     "raceId": 2728,
     "publicKey": "QvDSaZmLM8",
     "scoresUrl": "https://time.feibot.com/api/scores-data/QvDSaZmLM8"
   },
-
   "lang": "es",
-
   "branding": {
     "nameOverride": null,
     "logo": "/events/2728/logo.png",
     "heroImage": "/events/2728/banner.png"
   },
-
   "seo": {
     "title": "Carrera Corazón Quindío 2025",
     "description": "Resultados oficiales, tiempos en vivo y certificados.",
     "ogImage": "/events/2728/og.jpg"
   },
-
   "nav": [
     { "label": "Inicio", "href": "./" },
     { "label": "Resultados", "href": "./results" },
     { "label": "En vivo", "href": "./live" }
   ],
-
   "modules": [
     { "type": "hero", "enabled": true },
     { "type": "distances", "enabled": true },
     { "type": "resultsPreview", "enabled": true, "limit": 10 }
-  ]
+  ],
+  "certificate": {
+    "enabled": true,
+    "template": {
+      "src": "/events/2728/certificates/template.png",
+      "width": 1600,
+      "height": 1131
+    },
+    "fields": [
+      { "key": "name", "x": 270, "y": 600, "fontSize": 55, "fontWeight": 800, "Color": "white" },
+      { "key": "bib", "x": 270, "y": 700, "fontSize": 55, "fontWeight": 700 },
+      { "key": "item_name", "x": 270, "y": 800, "fontSize": 55, "fontWeight": 700 },
+      { "key": "net_score", "x": 270, "y": 900, "fontSize": 55, "fontWeight": 700 },
+      { "key": "category_rank", "x": 270, "y": 1000, "fontSize": 55, "fontWeight": 700 },
+      { "key": "pace", "x": 270, "y": 1100, "fontSize": 55, "fontWeight": 700}
+    ]
+  }
 }
+
+
