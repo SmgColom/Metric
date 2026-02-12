@@ -2,14 +2,21 @@ import Link from "next/link";
 import EventShell from "@/components/event/EventShell";
 
 import { loadEventConfig } from "@/lib/loadEventConfig";
-import { fetchFeibotRace } from "@/lib/feibot";
 import { normalizeFeibot } from "@/lib/normalizeFeibot";
-
 import { feibotI18n } from "@/lib/i18n";
 
 // ===== i18n helpers =====
 const dictES = feibotI18n?.es ?? {};
 function tKey(key) {
+  // Ajustes solicitados de nombres visibles
+  if (key === "race.items[].title") return "Categoría";
+  if (key === "sex_display") return "Género";
+  if (key === "pace_display") return "Ritmo";
+  if (key === "overall_rank_net") return "Posición General";
+  if (key === "category_rank_net") return "Posición Categoría";
+  if (key === "gender_rank_net") return "Posición Género";
+  if (key === "total_finishers") return "Total corredores";
+
   return dictES[key] ?? key;
 }
 
@@ -23,6 +30,29 @@ function isScalar(v) {
   if (v === null || v === undefined) return false;
   const type = typeof v;
   return type === "string" || type === "number" || type === "boolean";
+}
+
+// Fix mojibake (JoaquÃ­n -> Joaquín)
+function fixText(input) {
+  if (input === null || input === undefined) return input;
+  if (typeof input !== "string") return input;
+
+  const s = input.trim();
+  if (!s) return s;
+
+  const looksBroken = /Ã.|Â./.test(s);
+  let out = s;
+
+  if (looksBroken) {
+    try {
+      out = Buffer.from(s, "latin1").toString("utf8");
+    } catch {
+      out = s;
+    }
+  }
+
+  out = out.replace(/;/g, " ").replace(/\s+/g, " ").trim();
+  return out;
 }
 
 function timeToSeconds(t) {
@@ -41,25 +71,46 @@ function getTimeValue(r) {
   return r?.net_score ?? r?.total_score ?? "";
 }
 
+// Ritmo con unidad
+function formatPace(pace) {
+  if (pace === null || pace === undefined) return "-";
+  const s = String(pace).trim();
+  if (!s) return "-";
+  return `${s} min/km`;
+}
+
 /**
- * Resolver valores especiales:
- * - "race.items[].title" no existe como key en runner, pero el valor real está en runner.item_name
- * - "category_rank" es calculado, no viene del runner
+ * Resolver valores especiales para la tabla:
+ * - "race.items[].title" -> runner.item_name
+ * - category_rank (fallback) -> calculado
+ * - nuevos campos:
+ *   - sex_display, pace_display, overall_rank_net, category_rank_net, gender_rank_net, total_finishers
  */
-function getRunnerValue(runner, key, categoryRank) {
+function getRunnerValue(runner, key, computed) {
   if (key === "race.items[].title") return runner?.item_name;
-  if (key === "category_rank") return categoryRank;
+
+  if (key === "category_rank") return computed?.categoryRankFallback ?? null;
+
+  if (key === "sex_display") return runner?.sex ?? runner?.gender ?? "-";
+  if (key === "pace_display") return computed?.paceDisplay ?? "-";
+
+  if (key === "overall_rank_net") return computed?.overallRankNet ?? null;
+  if (key === "category_rank_net") return computed?.categoryRankNet ?? null;
+  if (key === "gender_rank_net") return computed?.genderRankNet ?? null;
+
+  if (key === "total_finishers") return computed?.totalFinishers ?? null;
+
   return runner?.[key];
 }
 
-// Genera filas [labelTraducido, value] usando tu i18n
-function buildFields(runner, keys, categoryRank) {
+// Genera filas [label, value] usando i18n + computed
+function buildFields(runner, keys, computed) {
   return keys
-    .map((k) => [tKey(k), getRunnerValue(runner, k, categoryRank)])
+    .map((k) => [tKey(k), getRunnerValue(runner, k, computed)])
     .filter(([, v]) => isScalar(v) && String(v) !== "");
 }
 
-// Detecta si runner trae parciales en algún campo típico
+// Detecta splits array en runner (si existiera)
 function extractSplitsFromRunner(runner) {
   const candidates = ["splits", "laps", "checkpoints", "points", "passings", "segments"];
   for (const key of candidates) {
@@ -69,7 +120,7 @@ function extractSplitsFromRunner(runner) {
   return [];
 }
 
-// Normaliza split/lap a columnas
+// Normaliza split genérico (si viene como array)
 function normalizeSplit(x, idx) {
   const point =
     x?.point ??
@@ -89,8 +140,72 @@ function normalizeSplit(x, idx) {
     distance: distance === "" ? "-" : safeStr(distance),
     time: safeStr(time),
     lapTime: safeStr(lapTime),
-    pace: safeStr(pace),
+    pace: pace ? formatPace(pace) : "-",
   };
+}
+
+// ===== Parciales desde Feibot (sin array) =====
+function extractLapsFromFeibot(runner) {
+  const loopArrays = ["loop_a_format", "loop_b_format", "loop_c_format"];
+
+  for (const key of loopArrays) {
+    const arr = runner?.[key];
+    if (Array.isArray(arr) && arr.length) {
+      return arr
+        .map((l, idx) => {
+          const n = l?.lap_number ?? idx + 1;
+          const lap = l?.lap_time ?? "";
+          const total = l?.total_time ?? "";
+          return {
+            point: `Vuelta ${n}`,
+            distance: "-",
+            time: total ? String(total) : "-",
+            lapTime: lap ? String(lap) : "-",
+            pace: "-",
+          };
+        })
+        .filter((x) => x.lapTime !== "-" || x.time !== "-");
+    }
+  }
+
+  return [];
+}
+
+function extractCheckpointsFromFeibot(runner) {
+  const out = [];
+  for (let i = 1; i <= 9; i++) {
+    const k = `cp${i}`;
+    const v = runner?.[k];
+    if (typeof v === "string" && v.trim()) {
+      out.push({
+        point: `CP${i}`,
+        distance: "-",
+        time: v.trim(),
+        lapTime: "-",
+        pace: "-",
+      });
+    }
+  }
+  return out;
+}
+
+// ===== Ranking por género (net) =====
+function computeGenderRankNet(allScores, runner) {
+  const sex = (runner?.sex ?? runner?.gender ?? "").toString().trim().toUpperCase();
+  const bib = String(runner?.bib ?? "");
+  if (!sex || !bib) return null;
+
+  const list = allScores
+    .filter(
+      (r) =>
+        String(r?.bib ?? "") &&
+        (r?.sex ?? r?.gender ?? "").toString().trim().toUpperCase() === sex
+    )
+    .slice()
+    .sort((a, b) => timeToSeconds(getTimeValue(a)) - timeToSeconds(getTimeValue(b)));
+
+  const idx = list.findIndex((r) => String(r?.bib ?? "") === bib);
+  return idx >= 0 ? idx + 1 : null;
 }
 
 export async function getServerSideProps({ params }) {
@@ -100,44 +215,75 @@ export async function getServerSideProps({ params }) {
     const config = loadEventConfig(eventKey);
     if (!config?.feibot?.publicKey) return { notFound: true };
 
-    const baseUrl =
-  process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const res = await fetch(`${baseUrl}/api/feibot/${config.feibot.publicKey}`);
+    if (!res.ok) throw new Error("Feibot API failed");
 
-const res = await fetch(
-  `${baseUrl}/api/feibot/${config.feibot.publicKey}`
-);
-
-if (!res.ok) throw new Error("Feibot API failed");
-
-const raw = await res.json();
+    const raw = await res.json();
     const base = normalizeFeibot(raw);
 
-    const allScores = raw?.scores ?? [];
+    const allScoresRaw = Array.isArray(raw?.scores) ? raw.scores : [];
+
+    const allScores = allScoresRaw.map((r) => ({
+      ...r,
+      name: fixText(r?.name),
+      item_name: fixText(r?.item_name),
+      city: fixText(r?.city),
+      country: fixText(r?.country),
+      team: fixText(r?.team),
+      sex: (r?.sex ?? r?.gender ?? "").toString().trim().toUpperCase(),
+    }));
+
     const runner = allScores.find((r) => String(r?.bib ?? "") === String(bib));
     if (!runner) return { notFound: true };
 
-    // Ranking en su categoría (por tiempo neto)
+    // Total finalizados (finisher === 1)
+    const totalFinishers = allScores.filter((r) => Number(r?.finisher) === 1).length;
+
+    // Posiciones netas desde Feibot
+    const overallRankNet = runner?.net_ranking ?? null;
+    const categoryRankNet = runner?.item_net_ranking ?? null;
+
+    // Fallback categoría
     const catId = Number(runner?.item_id ?? 0);
     const sameCategory = allScores.filter((r) => Number(r?.item_id ?? 0) === catId);
+    const sortedCat = [...sameCategory].sort(
+      (a, b) => timeToSeconds(getTimeValue(a)) - timeToSeconds(getTimeValue(b))
+    );
+    const categoryRankFallback =
+      sortedCat.findIndex((r) => String(r?.bib ?? "") === String(bib)) + 1;
 
-    const sorted = [...sameCategory].sort((a, b) => {
-      return timeToSeconds(getTimeValue(a)) - timeToSeconds(getTimeValue(b));
-    });
+    // Posición por género (net) calculada
+    const genderRankNet = computeGenderRankNet(allScores, runner);
 
-    const categoryRank = sorted.findIndex((r) => String(r?.bib ?? "") === String(bib)) + 1;
+    // Ritmo con unidad
+    const paceDisplay = formatPace(runner?.pace);
 
-    // Parciales desde runner (si existen)
+    // Parciales
     const splitsRaw = extractSplitsFromRunner(runner);
-    const splits = Array.isArray(splitsRaw) ? splitsRaw.map(normalizeSplit) : [];
+    let splits = Array.isArray(splitsRaw) && splitsRaw.length ? splitsRaw.map(normalizeSplit) : [];
+
+    if (!splits.length) {
+      const laps = extractLapsFromFeibot(runner);
+      const cps = extractCheckpointsFromFeibot(runner);
+      splits = laps.length ? laps : cps;
+    }
 
     return {
       props: {
         config,
         data: base,
         runner,
-        categoryRank: categoryRank > 0 ? categoryRank : null,
+        eventKey,
+        computed: {
+          totalFinishers,
+          overallRankNet,
+          categoryRankNet,
+          categoryRankFallback: categoryRankFallback > 0 ? categoryRankFallback : null,
+          genderRankNet,
+          paceDisplay,
+        },
         splits,
-        eventKey, // ✅ IMPORTANTE para armar links correctos
       },
     };
   } catch (error) {
@@ -147,16 +293,24 @@ const raw = await res.json();
         config: null,
         data: null,
         runner: null,
-        categoryRank: null,
-        splits: [],
         eventKey: null,
+        computed: null,
+        splits: [],
       },
     };
   }
 }
 
-export default function RunnerDetailPage({ config, data, runner, categoryRank, splits, error, eventKey }) {
-  if (error || !config || !runner || !eventKey) {
+export default function RunnerDetailPage({
+  config,
+  data,
+  runner,
+  computed,
+  splits,
+  error,
+  eventKey,
+}) {
+  if (error || !config || !runner || !eventKey || !computed) {
     return (
       <div style={{ padding: 24 }}>
         <h1>Corredor no disponible</h1>
@@ -168,34 +322,27 @@ export default function RunnerDetailPage({ config, data, runner, categoryRank, s
     );
   }
 
-  // ✅ Links correctos SIEMPRE usando eventKey del route
   const resultsHref = `/e/${eventKey}/results`;
   const certificateHref = `/e/${eventKey}/runner/${encodeURIComponent(runner?.bib ?? "")}/certificate`;
 
-  const leftKeys = ["bib", "name", "gender", "age_group", "age_group2", "race.items[].title", "status"];
+  const leftKeys = ["bib", "name", "sex_display", "race.items[].title"];
 
   const rightKeys = [
     "total_score",
     "net_score",
-    "pace",
-    "category_rank",
-    "overall_gun_rank",
-    "overall_chip_rank",
-    "gender_gun_rank",
-    "gender_chip_rank",
-    "age_group_gun_rank",
-    "age_group_chip_rank",
-    "age_group2_gun_rank",
-    "age_group2_chip_rank",
+    "pace_display",
+    "overall_rank_net",
+    "category_rank_net",
+    "gender_rank_net",
+    "total_finishers",
   ];
 
-  const leftRows = buildFields(runner, leftKeys, categoryRank);
-  const rightRows = buildFields(runner, rightKeys, categoryRank);
+  const leftRows = buildFields(runner, leftKeys, computed);
+  const rightRows = buildFields(runner, rightKeys, computed);
 
   return (
     <EventShell config={config} data={data}>
       <section style={{ paddingTop: 10 }}>
-        {/* Acciones superiores */}
         <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 12 }}>
           <Link
             href={resultsHref}
@@ -231,7 +378,6 @@ export default function RunnerDetailPage({ config, data, runner, categoryRank, s
           {runner?.name ? safeStr(runner.name) : "Detalle del corredor"}
         </h1>
 
-        {/* Resumen */}
         <div
           style={{
             display: "grid",
@@ -246,7 +392,6 @@ export default function RunnerDetailPage({ config, data, runner, categoryRank, s
           <InfoTable title="Tiempos y posiciones" rows={rightRows} />
         </div>
 
-        {/* Parciales */}
         <h2 style={{ margin: "18px 0 10px", fontSize: 18 }}>Parciales</h2>
 
         {Array.isArray(splits) && splits.length > 0 ? (
@@ -254,32 +399,44 @@ export default function RunnerDetailPage({ config, data, runner, categoryRank, s
             <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 760 }}>
               <thead>
                 <tr>
-                  {["split_point", "split_distance", "split_time_total", "split_time_lap", "split_pace"].map((k) => (
-                    <th
-                      key={k}
-                      style={{
-                        textAlign: "left",
-                        padding: "10px 8px",
-                        borderBottom: "1px solid #eee",
-                        fontSize: 13,
-                        opacity: 0.8,
-                        whiteSpace: "nowrap",
-                      }}
-                    >
-                      {tKey(k)}
-                    </th>
-                  ))}
+                  {["split_point", "split_distance", "split_time_total", "split_time_lap", "split_pace"].map(
+                    (k) => (
+                      <th
+                        key={k}
+                        style={{
+                          textAlign: "left",
+                          padding: "10px 8px",
+                          borderBottom: "1px solid #eee",
+                          fontSize: 13,
+                          opacity: 0.8,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        {tKey(k)}
+                      </th>
+                    )
+                  )}
                 </tr>
               </thead>
 
               <tbody>
                 {splits.map((s, i) => (
                   <tr key={`${s.point}-${i}`}>
-                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>{s.point}</td>
-                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>{s.distance}</td>
-                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>{s.time}</td>
-                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>{s.lapTime}</td>
-                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>{s.pace}</td>
+                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>
+                      {safeStr(s.point)}
+                    </td>
+                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>
+                      {safeStr(s.distance)}
+                    </td>
+                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>
+                      {safeStr(s.time)}
+                    </td>
+                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>
+                      {safeStr(s.lapTime)}
+                    </td>
+                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>
+                      {safeStr(s.pace)}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -298,7 +455,9 @@ export default function RunnerDetailPage({ config, data, runner, categoryRank, s
 function InfoTable({ title, rows }) {
   return (
     <div style={{ border: "1px solid #eee", borderRadius: 14, overflow: "hidden" }}>
-      <div style={{ padding: "12px 14px", borderBottom: "1px solid #eee", fontWeight: 800 }}>{title}</div>
+      <div style={{ padding: "12px 14px", borderBottom: "1px solid #eee", fontWeight: 800 }}>
+        {title}
+      </div>
 
       <div style={{ display: "grid" }}>
         {rows.map(([label, value]) => (
@@ -320,6 +479,8 @@ function InfoTable({ title, rows }) {
     </div>
   );
 }
+
+
 
 
 

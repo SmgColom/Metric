@@ -1,0 +1,176 @@
+/* src/pages/e/[eventKey]/Live.module.scss */
+
+.page {
+  padding-top: 10px;
+}
+
+.headerRow {
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  flex-wrap: wrap;
+
+  h1 {
+    margin: 0 0 12px;
+  }
+}
+
+.subLink {
+  opacity: 0.8;
+}
+
+.liveBar {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
+  padding: 10px 12px;
+  border: 1px solid #eee;
+  border-radius: 12px;
+  margin-bottom: 14px;
+}
+
+.liveState {
+  font-weight: 800;
+}
+
+.liveStateValue {
+  font-weight: 900;
+
+  &.on {
+    color: var(--primary);
+  }
+
+  &.off {
+    color: #888;
+  }
+}
+
+.controlsRow {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.input {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  min-width: 260px;
+}
+
+.selectGroup {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+
+  span {
+    font-size: 14px;
+    opacity: 0.8;
+  }
+}
+
+.select {
+  padding: 10px 12px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+}
+
+.meta {
+  margin-bottom: 12px;
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.tableWrap {
+  overflow-x: auto;
+}
+
+.table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 980px;
+}
+
+.th {
+  text-align: left;
+  padding: 10px 8px;
+  border-bottom: 1px solid #eee;
+  font-size: 13px;
+  opacity: 0.8;
+  white-space: nowrap;
+}
+
+.td {
+  padding: 10px 8px;
+  border-bottom: 1px solid #f2f2f2;
+  vertical-align: top;
+}
+
+.nameLink {
+  font-weight: 800;
+  text-decoration: none;
+}
+
+.splitCell {
+  font-size: 12px;
+  opacity: 0.9;
+  line-height: 1.35;
+}
+
+.pagerRow {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-top: 16px;
+}
+
+.pagerInfo {
+  font-size: 14px;
+  opacity: 0.8;
+}
+
+.tip {
+  margin-top: 14px;
+  opacity: 0.7;
+  font-size: 13px;
+}
+
+.backRow {
+  margin-top: 14px;
+}
+
+/* Buttons */
+.btn {
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: 1px solid #ddd;
+  background: white;
+  cursor: pointer;
+  font-weight: 800;
+
+  &:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+}
+
+.btnPrimary {
+  background: var(--primary);
+  color: #0b1220;
+  font-weight: 900;
+}
+
+/* Responsive tweaks */
+@media (max-width: 768px) {
+  .table {
+    min-width: 860px;
+  }
+
+  .input {
+    min-width: 200px;
+    width: 100%;
+  }
+}
