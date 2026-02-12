@@ -34,14 +34,25 @@
       "height": 2048
     },
     "fields": [
-      { "key": "name", "x": 270, "y": 600, "fontSize": 55, "fontWeight": 800, "color": "#FFFFFF" },
-      { "key": "bib", "x": 270, "y": 700, "fontSize": 55, "fontWeight": 700, "color": "#FFFFFF" },
-      { "key": "item_name", "x": 270, "y": 800, "fontSize": 55, "fontWeight": 700, "color": "#FFFFFF" },
-      { "key": "net_score", "x": 270, "y": 900, "fontSize": 55, "fontWeight": 700, "color": "#FFFFFF" },
-      { "key": "category_rank", "x": 270, "y": 1000, "fontSize": 55, "fontWeight": 700, "color": "#FFFFFF" },
-      { "key": "pace", "x": 270, "y": 1100, "fontSize": 55, "fontWeight": 700, "color": "#FFFFFF"}
-    ]
+  { "key": "name",            "label": "Nombre",            "x": 270, "y": 570,  "fontSize": 45, "fontWeight": 800, "color": "#FFFFFF" },
+
+  { "key": "bib",             "label": "Dorsal",            "x": 270, "y": 700,  "fontSize": 45, "fontWeight": 700, "color": "#FFFFFF" },
+  { "key": "item_name",       "label": "Categoría",         "x": 270, "y": 760,  "fontSize": 45, "fontWeight": 700, "color": "#FFFFFF" },
+  { "key": "net_score",       "label": "Tiempo neto",       "x": 270, "y": 820,  "fontSize": 45, "fontWeight": 700, "color": "#FFFFFF" },
+
+  { "key": "overall_rank_net", "label": "Posición General", "x": 270, "y": 880,  "fontSize": 45, "fontWeight": 700, "color": "#FFFFFF" },
+  { "key": "sex_display",      "label": "Género",           "x": 270, "y": 940, "fontSize": 45, "fontWeight": 700, "color": "#FFFFFF" },
+  { "key": "gender_rank_net",  "label": "Posición Género",  "x": 270, "y": 1000, "fontSize": 45, "fontWeight": 700, "color": "#FFFFFF" },
+  { "key": "category_rank_net","label": "Posición Categoría","x":270, "y": 1060, "fontSize": 45, "fontWeight": 700, "color": "#FFFFFF" },
+
+  { "key": "pace_display",     "label": "Ritmo (min/km)",   "x": 270, "y": 1120, "fontSize": 45, "fontWeight": 700, "color": "#FFFFFF" },
+
+  { "key": "total_finishers",  "label": "Total corredores", "x": 270, "y": 1180, "fontSize": 45, "fontWeight": 700, "color": "#FFFFFF" }
+]
+
   }
 }
+
+
 
 
