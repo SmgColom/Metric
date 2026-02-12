@@ -2,9 +2,6 @@
 import Link from "next/link";
 import { useMemo, useState, useCallback, useEffect } from "react";
 
-// PDF (solo cliente)
-import { Document, Page, Text, Image, PDFDownloadLink, StyleSheet } from "@react-pdf/renderer";
-
 import { feibotI18n, t as tFn } from "@/lib/i18n";
 
 // ===== i18n helpers =====
@@ -28,14 +25,14 @@ function isScalar(v) {
   return type === "string" || type === "number" || type === "boolean";
 }
 
-// Clamp para evitar “Aw Snap” por tamaños locos en JSON
+// Clamp para evitar tamaños locos
 function clampNumber(n, min, max, fallback) {
   const x = Number(n);
   if (!Number.isFinite(x)) return fallback;
   return Math.min(max, Math.max(min, x));
 }
 
-// ===== Labels overrides (lo que pediste) =====
+// ===== Labels overrides =====
 function labelForKey(key, fallbackLabel) {
   const overrides = {
     sex_display: "Género",
@@ -44,9 +41,7 @@ function labelForKey(key, fallbackLabel) {
     category_rank_net: "Posición Categoría",
     gender_rank_net: "Posición Género",
     total_finishers: "Total corredores",
-    // si en algún JSON usan category_rank (fallback viejo)
     category_rank: "Posición Categoría",
-    // y este es el nombre feibot viejo
     "race.items[].title": "Categoría",
   };
 
@@ -54,24 +49,19 @@ function labelForKey(key, fallbackLabel) {
   return fallbackLabel ?? tKey(key);
 }
 
-// ===== Valor resolver (runner + computed) =====
+// ===== Value resolver (runner + computed) =====
 function formatPaceWithUnit(pace) {
   if (pace === null || pace === undefined) return "-";
   const s = String(pace).trim();
   if (!s) return "-";
-  // si ya viene con unidad no duplicamos
   if (/min\/km/i.test(s)) return s;
   return `${s} min/km`;
 }
 
 function getValueForKey({ runner, computed, key, categoryRankFallback }) {
-  // algunos JSON antiguos apuntan a race.items[].title
   if (key === "race.items[].title") return runner?.item_name ?? "-";
-
-  // Fallback viejo de tu certificado anterior
   if (key === "category_rank") return categoryRankFallback ?? null;
 
-  // NUEVOS CAMPOS (vienen en computed, no en runner)
   if (key === "sex_display") {
     const s = computed?.sexDisplay ?? runner?.sex ?? runner?.gender ?? "";
     return s ? String(s).toUpperCase() : "-";
@@ -85,122 +75,196 @@ function getValueForKey({ runner, computed, key, categoryRankFallback }) {
   if (key === "overall_rank_net") return computed?.overallRankNet ?? runner?.net_ranking ?? null;
   if (key === "category_rank_net") return computed?.categoryRankNet ?? runner?.item_net_ranking ?? null;
   if (key === "gender_rank_net") return computed?.genderRankNet ?? null;
-
   if (key === "total_finishers") return computed?.totalFinishers ?? null;
 
-  // default: runner directo
   return runner?.[key];
 }
 
-// ===== PDF DOC =====
-// - wrap=true para que no se salga
-// - maxWidth / width para forzar salto
-function CertificatePDF({
-  runner,
-  computed,
-  categoryRankFallback,
+// ===== Canvas helpers (descarga PNG) =====
+function loadImage(src) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = "anonymous"; // importante si el template fuera externo
+    img.onload = () => resolve(img);
+    img.onerror = reject;
+    img.src = src;
+  });
+}
+
+/**
+ * Wrap de texto para canvas:
+ * - rompe por palabras
+ * - si una palabra es muy larga, rompe por caracteres
+ */
+function wrapTextCanvas(ctx, text, x, y, maxWidth, lineHeight, maxLines = 6) {
+  const str = String(text ?? "");
+  if (!str) return { lines: 0, ended: true };
+
+  const words = str.split(" ");
+  const lines = [];
+  let line = "";
+
+  const pushLine = (l) => {
+    if (lines.length < maxLines) lines.push(l);
+  };
+
+  for (let i = 0; i < words.length; i++) {
+    const w = words[i];
+    const test = line ? `${line} ${w}` : w;
+
+    if (ctx.measureText(test).width <= maxWidth) {
+      line = test;
+      continue;
+    }
+
+    // si la línea actual tiene algo, la cerramos
+    if (line) {
+      pushLine(line);
+      line = w;
+      if (lines.length >= maxLines) break;
+      continue;
+    }
+
+    // si la palabra sola no cabe, rompemos por caracteres
+    let chunk = "";
+    for (const ch of w) {
+      const testChunk = chunk + ch;
+      if (ctx.measureText(testChunk).width <= maxWidth) {
+        chunk = testChunk;
+      } else {
+        pushLine(chunk);
+        chunk = ch;
+        if (lines.length >= maxLines) break;
+      }
+    }
+    line = chunk;
+    if (lines.length >= maxLines) break;
+  }
+
+  if (lines.length < maxLines && line) pushLine(line);
+
+  // pintar
+  lines.forEach((l, idx) => ctx.fillText(l, x, y + idx * lineHeight));
+
+  return { lines: lines.length, ended: lines.length < maxLines };
+}
+
+async function exportCertificatePng({
   templateSrc,
   pageWidth,
   pageHeight,
   fields,
   enabledKeys,
+  runner,
+  computed,
+  categoryRankFallback,
+  fileName,
+  scale = 2, // ✅ 2x para que quede nítido
 }) {
-  // ancho max por defecto (si el JSON no especifica boxWidth)
-  // lo dejamos en 70% del ancho de la hoja para que sí haya wrap.
+  if (!templateSrc) throw new Error("No hay templateSrc para exportar.");
+  const img = await loadImage(templateSrc);
+
+  const canvas = document.createElement("canvas");
+  canvas.width = Math.round(pageWidth * scale);
+  canvas.height = Math.round(pageHeight * scale);
+
+  const ctx = canvas.getContext("2d");
+  ctx.scale(scale, scale);
+
+  // fondo
+  ctx.drawImage(img, 0, 0, pageWidth, pageHeight);
+
+  // default boxWidth: 70% del ancho
   const defaultBoxWidth = Math.round(pageWidth * 0.7);
 
-  const styles = useMemo(
-    () =>
-      StyleSheet.create({
-        page: { position: "relative", width: pageWidth, height: pageHeight, padding: 0 },
-        bg: { position: "absolute", left: 0, top: 0, width: pageWidth, height: pageHeight },
-      }),
-    [pageWidth, pageHeight]
-  );
+  // pintar fields
+  for (const f of fields) {
+    if (!enabledKeys.has(f.key)) continue;
 
-  return (
-    <Document>
-      <Page size={{ width: pageWidth, height: pageHeight }} style={styles.page}>
-        {templateSrc ? <Image src={templateSrc} style={styles.bg} fixed /> : null}
+    const rawValue = getValueForKey({
+      runner,
+      computed,
+      key: f.key,
+      categoryRankFallback,
+    });
 
-        {fields
-          .filter((f) => enabledKeys.has(f.key))
-          .map((f) => {
-            const rawValue = getValueForKey({
-              runner,
-              computed,
-              key: f.key,
-              categoryRankFallback,
-            });
+    if (!isScalar(rawValue) || String(rawValue) === "") continue;
 
-            if (!isScalar(rawValue) || String(rawValue) === "") return null;
+    const value = safeStr(rawValue);
+    const label = labelForKey(f.key, f.label);
+    const text = `${label}: ${value}`;
 
-            const value = safeStr(rawValue);
-            const label = labelForKey(f.key, f.label);
-            const text = `${label}: ${value}`;
+    const x = Number(f.x ?? 0);
+    const y = Number(f.y ?? 0);
 
-            // Caja para wrap (si el JSON trae boxWidth, lo usa)
-            const boxWidth = clampNumber(f.boxWidth, 120, pageWidth, defaultBoxWidth);
+    const fontSize = clampNumber(f.fontSize, 8, 300, 40);
+    const fontWeight = f.fontWeight ?? 700;
+    const color = f.color ?? "#FFFFFF";
 
-            return (
-              <Text
-                key={f.key}
-                wrap
-                style={{
-                  position: "absolute",
-                  left: Number(f.x ?? 0),
-                  top: Number(f.y ?? 0),
-                  width: boxWidth, // ✅ esto habilita wrap real
-                  fontSize: Number(f.fontSize ?? 28),
-                  fontWeight: f.fontWeight ?? 700,
-                  color: f.color ?? "#0B1220",
-                  lineHeight: Number(f.lineHeight ?? 1.1), // ✅ mejor legibilidad
-                }}
-              >
-                {text}
-              </Text>
-            );
-          })}
-      </Page>
-    </Document>
-  );
+    // Wrap
+    const boxWidth = clampNumber(f.boxWidth, 120, pageWidth, defaultBoxWidth);
+    const lineHeightPx = clampNumber(
+      // si lineHeight es "1.1" (ratio), lo convertimos; si es px (>= 8) también sirve
+      Number(f.lineHeight) > 8 ? Number(f.lineHeight) : Math.round(fontSize * (Number(f.lineHeight ?? 1.15))),
+      8,
+      600,
+      Math.round(fontSize * 1.15)
+    );
+
+    const maxLines = clampNumber(f.maxLines, 1, 20, 6);
+
+    // fuente canvas (usa sans por defecto)
+    ctx.fillStyle = color;
+    ctx.textBaseline = "top";
+    ctx.font = `${fontWeight} ${fontSize}px Arial`;
+
+    wrapTextCanvas(ctx, text, x, y, boxWidth, lineHeightPx, maxLines);
+  }
+
+  // descargar
+  const blob = await new Promise((resolve) => canvas.toBlob(resolve, "image/png", 1));
+  const url = URL.createObjectURL(blob);
+
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = fileName || "certificado.png";
+  a.click();
+
+  URL.revokeObjectURL(url);
 }
 
 export default function CertificateClient({ config, data, runner, computed, categoryRank }) {
-  // back
   const backHref = `/e/${config.eventKey}/runner/${encodeURIComponent(String(runner?.bib ?? ""))}`;
 
-  // ===== Lee config de certificados =====
+  // ===== Leer config =====
   const certCfg = config?.certificate ?? {};
   const template = certCfg?.template ?? {};
   const fieldsFromJson = Array.isArray(certCfg?.fields) ? certCfg.fields : [];
 
-  /**
-   * ✅ Auto-inyectar fields si el JSON no los trae
-   * (o si quieres garantizar que siempre existan los nuevos)
-   */
+  // Defaults si el JSON no trae fields
   const defaultFields = useMemo(
     () => [
-      { key: "name", label: "Nombre", x: 160, y: 680, fontSize: 36, color: "#FFFFFF" },
-      { key: "bib", label: "Dorsal", x: 160, y: 760, fontSize: 36, color: "#FFFFFF" },
-      { key: "race.items[].title", label: "Categoría", x: 160, y: 840, fontSize: 36, color: "#FFFFFF" },
-      { key: "net_score", label: "Tiempo neto", x: 160, y: 920, fontSize: 36, color: "#FFFFFF" },
+      { key: "name", label: "Nombre", x: 160, y: 680, fontSize: 36, fontWeight: 800, color: "#FFFFFF", boxWidth: 900, lineHeight: 1.15 },
+      { key: "bib", label: "Dorsal", x: 160, y: 760, fontSize: 36, fontWeight: 700, color: "#FFFFFF", boxWidth: 900, lineHeight: 1.15 },
+      { key: "race.items[].title", label: "Categoría", x: 160, y: 840, fontSize: 36, fontWeight: 700, color: "#FFFFFF", boxWidth: 900, lineHeight: 1.15 },
+      { key: "net_score", label: "Tiempo neto", x: 160, y: 920, fontSize: 36, fontWeight: 700, color: "#FFFFFF", boxWidth: 900, lineHeight: 1.15 },
 
-      // ✅ NUEVOS:
-      { key: "overall_rank_net", label: "Posición General", x: 160, y: 1000, fontSize: 36, color: "#FFFFFF" },
-      { key: "sex_display", label: "Género", x: 160, y: 1080, fontSize: 36, color: "#FFFFFF" },
-      { key: "gender_rank_net", label: "Posición Género", x: 160, y: 1160, fontSize: 36, color: "#FFFFFF" },
-      { key: "category_rank_net", label: "Posición Categoría", x: 160, y: 1240, fontSize: 36, color: "#FFFFFF" },
-      { key: "pace_display", label: "Ritmo", x: 160, y: 1320, fontSize: 36, color: "#FFFFFF" },
-      { key: "total_finishers", label: "Total corredores", x: 160, y: 1400, fontSize: 36, color: "#FFFFFF" },
+      { key: "overall_rank_net", label: "Posición General", x: 160, y: 1000, fontSize: 36, fontWeight: 700, color: "#FFFFFF", boxWidth: 900, lineHeight: 1.15 },
+      { key: "sex_display", label: "Género", x: 160, y: 1080, fontSize: 36, fontWeight: 700, color: "#FFFFFF", boxWidth: 900, lineHeight: 1.15 },
+      { key: "gender_rank_net", label: "Posición Género", x: 160, y: 1160, fontSize: 36, fontWeight: 700, color: "#FFFFFF", boxWidth: 900, lineHeight: 1.15 },
+      { key: "category_rank_net", label: "Posición Categoría", x: 160, y: 1240, fontSize: 36, fontWeight: 700, color: "#FFFFFF", boxWidth: 900, lineHeight: 1.15 },
+      { key: "pace_display", label: "Ritmo", x: 160, y: 1320, fontSize: 36, fontWeight: 700, color: "#FFFFFF", boxWidth: 900, lineHeight: 1.15 },
+      { key: "total_finishers", label: "Total corredores", x: 160, y: 1400, fontSize: 36, fontWeight: 700, color: "#FFFFFF", boxWidth: 900, lineHeight: 1.15 },
     ],
     []
   );
 
-  // Si ya tienes fields en JSON, usamos esos. Si no, caemos al default.
-  const fields = useMemo(() => (fieldsFromJson.length ? fieldsFromJson : defaultFields), [fieldsFromJson, defaultFields]);
+  const fields = useMemo(
+    () => (fieldsFromJson.length ? fieldsFromJson : defaultFields),
+    [fieldsFromJson, defaultFields]
+  );
 
-  // URL absoluta (react-pdf se pone delicado con rutas relativas)
+  // URL absoluta
   const templateSrc = useMemo(() => {
     const src = template?.src;
     if (!src) return "";
@@ -209,7 +273,7 @@ export default function CertificateClient({ config, data, runner, computed, cate
     return `${window.location.origin}${src}`;
   }, [template?.src]);
 
-  // ===== Auto-detect tamaño real del PNG (evita recortes) =====
+  // tamaño natural
   const [naturalSize, setNaturalSize] = useState(() => ({
     w: clampNumber(template.width, 300, 4000, 1365),
     h: clampNumber(template.height, 300, 6000, 2048),
@@ -237,12 +301,11 @@ export default function CertificateClient({ config, data, runner, computed, cate
   const pageWidth = naturalSize.w;
   const pageHeight = naturalSize.h;
 
-  // Checkboxes: por defecto habilita TODOS los fields
+  // enabled keys
   const initialKeys = useMemo(() => new Set(fields.map((f) => f.key)), [fields]);
   const [enabledKeys, setEnabledKeys] = useState(() => initialKeys);
 
   useEffect(() => {
-    // si cambian fields (por JSON/auto), resetea selección
     setEnabledKeys(new Set(fields.map((f) => f.key)));
   }, [fields]);
 
@@ -255,24 +318,10 @@ export default function CertificateClient({ config, data, runner, computed, cate
     });
   }, []);
 
-  // Zoom del preview visual
+  // Zoom preview
   const [zoom, setZoom] = useState(0.4);
 
-  // ===== PDF “bajo demanda” =====
-  const [pdfSnapshot, setPdfSnapshot] = useState(null);
-  const preparePdf = () => {
-    setPdfSnapshot({
-      enabledKeys: new Set(enabledKeys),
-      templateSrc,
-      pageWidth,
-      pageHeight,
-      fields,
-    });
-  };
-
-  const fileName = `certificado_${config.eventKey}_bib_${safeStr(runner?.bib)}.pdf`;
-
-  // Preview (texto simple)
+  // Preview texto
   const previewRows = useMemo(() => {
     return fields
       .filter((f) => enabledKeys.has(f.key))
@@ -294,12 +343,40 @@ export default function CertificateClient({ config, data, runner, computed, cate
   const scaledW = Math.round(pageWidth * zoom);
   const scaledH = Math.round(pageHeight * zoom);
 
-  // Para wrap en preview HTML
+  // wrap en preview HTML
   const defaultBoxWidthPreview = Math.round(pageWidth * 0.7);
+
+  const pngFileName = `certificado_${config.eventKey}_bib_${safeStr(runner?.bib)}.png`;
+
+  const [imgBusy, setImgBusy] = useState(false);
+  const [imgError, setImgError] = useState("");
+
+  const onDownloadImage = async () => {
+    try {
+      setImgError("");
+      setImgBusy(true);
+
+      await exportCertificatePng({
+        templateSrc,
+        pageWidth,
+        pageHeight,
+        fields,
+        enabledKeys,
+        runner,
+        computed,
+        categoryRankFallback: categoryRank,
+        fileName: pngFileName,
+        scale: 2, // ✅ calidad
+      });
+    } catch (e) {
+      setImgError(e?.message ?? "Error generando imagen");
+    } finally {
+      setImgBusy(false);
+    }
+  };
 
   return (
     <section style={{ paddingTop: 10 }}>
-      {/* ✅ SOLO una vez */}
       <Link href={backHref} style={{ display: "inline-block", padding: "8px 0" }}>
         ← Volver al corredor
       </Link>
@@ -317,10 +394,10 @@ export default function CertificateClient({ config, data, runner, computed, cate
       )}
 
       <p style={{ margin: "0 0 14px", opacity: 0.8 }}>
-        Selecciona qué datos van en el certificado y luego descárgalo en PDF.
+        Selecciona qué datos van en el certificado y luego descárgalo en imagen (PNG).
       </p>
 
-      {/* selector de campos */}
+      {/* selector */}
       <div
         style={{
           display: "grid",
@@ -348,7 +425,7 @@ export default function CertificateClient({ config, data, runner, computed, cate
         ))}
       </div>
 
-      {/* ===== PREVIEW VISUAL ===== */}
+      {/* PREVIEW VISUAL */}
       <div style={{ border: "1px solid #eee", borderRadius: 14, overflow: "hidden", marginBottom: 14 }}>
         <div
           style={{
@@ -412,12 +489,7 @@ export default function CertificateClient({ config, data, runner, computed, cate
                   const label = labelForKey(f.key, f.label);
                   const text = `${label}: ${value}`;
 
-                  const boxW = clampNumber(
-                    f.boxWidth,
-                    120,
-                    pageWidth,
-                    defaultBoxWidthPreview
-                  );
+                  const boxW = clampNumber(f.boxWidth, 120, pageWidth, defaultBoxWidthPreview);
 
                   return (
                     <div
@@ -426,13 +498,13 @@ export default function CertificateClient({ config, data, runner, computed, cate
                         position: "absolute",
                         left: Math.round(Number(f.x ?? 0) * zoom),
                         top: Math.round(Number(f.y ?? 0) * zoom),
-                        width: Math.round(boxW * zoom), // ✅ wrap en preview
+                        width: Math.round(boxW * zoom),
                         fontSize: Math.round(Number(f.fontSize ?? 28) * zoom),
                         fontWeight: f.fontWeight ?? 700,
                         color: f.color ?? "#FFFFFF",
-                        whiteSpace: "normal", // ✅ wrap real en HTML
-                        lineHeight: (Number(f.lineHeight ?? 1.1) * 1.1),
-                        overflowWrap: "anywhere", // ✅ rompe palabras si toca
+                        whiteSpace: "normal",
+                        lineHeight: 1.15,
+                        overflowWrap: "anywhere",
                         wordBreak: "break-word",
                       }}
                     >
@@ -452,7 +524,7 @@ export default function CertificateClient({ config, data, runner, computed, cate
         </div>
       </div>
 
-      {/* ===== PREVIEW TEXTO ===== */}
+      {/* PREVIEW TEXTO */}
       <div style={{ border: "1px solid #eee", borderRadius: 14, overflow: "hidden", marginBottom: 14 }}>
         <div style={{ padding: "12px 14px", borderBottom: "1px solid #eee", fontWeight: 800 }}>
           Preview (texto)
@@ -477,59 +549,36 @@ export default function CertificateClient({ config, data, runner, computed, cate
         </div>
       </div>
 
-      {/* ===== PDF bajo demanda ===== */}
+      {/* DESCARGA IMAGEN */}
       <div style={{ display: "flex", gap: 12, flexWrap: "wrap", alignItems: "center" }}>
         <button
           type="button"
-          onClick={preparePdf}
+          onClick={onDownloadImage}
+          disabled={imgBusy || !templateSrc}
           style={{
             padding: "10px 14px",
             borderRadius: 12,
             border: "1px solid #ddd",
-            background: "#fff",
-            cursor: "pointer",
+            background: "var(--primary)",
+            color: "#0B1220",
+            cursor: imgBusy ? "not-allowed" : "pointer",
             fontWeight: 900,
+            opacity: imgBusy ? 0.7 : 1,
           }}
         >
-          Preparar PDF
+          {imgBusy ? "Generando imagen..." : "Descargar certificado (PNG)"}
         </button>
 
-        {pdfSnapshot ? (
-          <PDFDownloadLink
-            document={
-              <CertificatePDF
-                runner={runner}
-                computed={computed}
-                categoryRankFallback={categoryRank}
-                templateSrc={pdfSnapshot.templateSrc}
-                pageWidth={pdfSnapshot.pageWidth}
-                pageHeight={pdfSnapshot.pageHeight}
-                fields={pdfSnapshot.fields}
-                enabledKeys={pdfSnapshot.enabledKeys}
-              />
-            }
-            fileName={fileName}
-            style={{
-              display: "inline-flex",
-              alignItems: "center",
-              gap: 10,
-              padding: "10px 14px",
-              borderRadius: 12,
-              textDecoration: "none",
-              fontWeight: 900,
-              background: "var(--primary)",
-              color: "#0B1220",
-            }}
-          >
-            {({ loading }) => (loading ? "Generando PDF..." : "Descargar certificado (PDF)")}
-          </PDFDownloadLink>
-        ) : (
-          <span style={{ fontSize: 13, opacity: 0.7 }}>Primero haz clic en “Preparar PDF”.</span>
-        )}
+        {imgError ? <span style={{ color: "#b00020", fontWeight: 700 }}>{imgError}</span> : null}
+
+        <span style={{ fontSize: 13, opacity: 0.7 }}>
+          Tip: si un texto es muy largo, agrega <code>boxWidth</code> y <code>maxLines</code> en el JSON.
+        </span>
       </div>
     </section>
   );
 }
+
 
 
 
