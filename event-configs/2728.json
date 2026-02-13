@@ -24,7 +24,7 @@
   "modules": [
     { "type": "hero", "enabled": true },
     { "type": "distances", "enabled": true },
-    { "type": "resultsPreview", "enabled": true, "limit": 10 }
+    { "type": "resultsPreview", "enabled": true, "limit": 3 }
   ],
   "certificate": {
     "enabled": true,

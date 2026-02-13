@@ -571,9 +571,6 @@ export default function CertificateClient({ config, data, runner, computed, cate
 
         {imgError ? <span style={{ color: "#b00020", fontWeight: 700 }}>{imgError}</span> : null}
 
-        <span style={{ fontSize: 13, opacity: 0.7 }}>
-          Tip: si un texto es muy largo, agrega <code>boxWidth</code> y <code>maxLines</code> en el JSON.
-        </span>
       </div>
     </section>
   );

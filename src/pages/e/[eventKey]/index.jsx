@@ -3,10 +3,9 @@ import EventShell from "@/components/event/EventShell";
 import ModulesRenderer from "@/components/event/ModulesRenderer";
 
 import { loadEventConfig } from "@/lib/loadEventConfig";
-import { fetchFeibotRace } from "@/lib/feibot";
 import { normalizeFeibot } from "@/lib/normalizeFeibot";
 
-// Helpers (solo server-side)
+// ===== Helpers (SSR) =====
 function timeToSeconds(t) {
   if (!t) return Number.POSITIVE_INFINITY;
   const s = String(t).trim();
@@ -19,43 +18,107 @@ function timeToSeconds(t) {
   return Number.POSITIVE_INFINITY;
 }
 
+function getTimeValue(r) {
+  return r?.net_score ?? r?.total_score ?? "";
+}
+
+function isFinisher(r) {
+  return Number(r?.finisher) === 1;
+}
+
+function getResultsPreviewLimit(config) {
+  const mods = Array.isArray(config?.modules) ? config.modules : [];
+  const m = mods.find((x) => x?.type === "resultsPreview" && x?.enabled);
+  const limit = Number(m?.limit);
+  return Number.isFinite(limit) && limit > 0 ? limit : 3;
+}
+
+function buildTopByCategory(scores, limitPerCategory) {
+  const finishers = scores.filter(isFinisher);
+
+  // agrupar por item_id (ideal). fallback item_name.
+  const groups = new Map();
+
+  for (const r of finishers) {
+    const itemId = r?.item_id ?? "";
+    const itemName = r?.item_name ?? "Categoría";
+    const key = String(itemId || itemName);
+
+    if (!groups.has(key)) {
+      groups.set(key, {
+        item_id: itemId || null,
+        item_name: itemName,
+        top: [],
+      });
+    }
+    groups.get(key).top.push(r);
+  }
+
+  const out = [];
+  for (const g of groups.values()) {
+    const sorted = g.top
+      .slice()
+      .sort((a, b) => timeToSeconds(getTimeValue(a)) - timeToSeconds(getTimeValue(b)));
+
+    out.push({
+      item_id: g.item_id,
+      item_name: g.item_name,
+      top: sorted.slice(0, limitPerCategory).map((r, idx) => ({
+        id: r?.id ?? `${g.item_id ?? g.item_name}-${r?.bib ?? idx}`,
+        name: r?.name ?? "",
+        bib: r?.bib ?? "",
+        item_id: r?.item_id ?? null,
+        item_name: r?.item_name ?? g.item_name ?? "",
+        net_score: r?.net_score ?? "",
+        total_score: r?.total_score ?? "",
+        finisher: r?.finisher ?? null,
+        rank_in_category: idx + 1, // 👈 útil para mostrar #1/#2/#3
+      })),
+    });
+  }
+
+  // ordenar categorías por el tiempo del ganador (opcional, pero queda “pro”)
+  out.sort((a, b) => {
+    const ta = timeToSeconds(getTimeValue(a?.top?.[0]));
+    const tb = timeToSeconds(getTimeValue(b?.top?.[0]));
+    return ta - tb;
+  });
+
+  return out;
+}
+
 export async function getServerSideProps({ params }) {
   const { eventKey } = params;
 
   try {
-    // 1) Cargar config (default + override)
     const config = loadEventConfig(eventKey);
+    if (!config?.feibot?.publicKey) return { notFound: true };
 
-    // 2) Validación mínima
-    if (!config?.feibot?.publicKey) {
-      return { notFound: true };
-    }
+    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
+    const res = await fetch(`${baseUrl}/api/feibot/${config.feibot.publicKey}`);
+    if (!res.ok) throw new Error("Feibot API failed");
+    const raw = await res.json();
 
-    // 3) Llamar API pública de Feibot
-    const baseUrl =
-  process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-
-const res = await fetch(
-  `${baseUrl}/api/feibot/${config.feibot.publicKey}`
-);
-
-if (!res.ok) throw new Error("Feibot API failed");
-
-const raw = await res.json();
-
-    // 4) Normalizar y reducir payload (clave para que no pese 2MB+)
+    // reduce payload
     const data = normalizeFeibot(raw);
 
-    // 5) Summary liviano para usar en módulos (ranking, totals, etc.)
-    const scores = raw?.scores ?? [];
+    const scores = Array.isArray(raw?.scores) ? raw.scores : [];
     const items = data?.race?.items ?? [];
 
-    const top10 = [...scores]
-      .sort((a, b) => {
-        const ta = a?.net_score ?? a?.total_score ?? "";
-        const tb = b?.net_score ?? b?.total_score ?? "";
-        return timeToSeconds(ta) - timeToSeconds(tb);
-      })
+    // ✅ limit por categoría desde el JSON del evento
+    const limitPerCategory = getResultsPreviewLimit(config);
+
+    // ✅ TOP 3 por categoría (solo finishers)
+    const resultsPreviewByCategory = buildTopByCategory(scores, limitPerCategory);
+
+    // (opcional) flat para compatibilidad
+    const resultsPreview = resultsPreviewByCategory.flatMap((g) => g.top);
+
+    // (mantengo tu top10 global por tiempo neto)
+    const top10 = scores
+      .filter(isFinisher) // 👈 si quieres incluir DNFs quita esta línea
+      .slice()
+      .sort((a, b) => timeToSeconds(getTimeValue(a)) - timeToSeconds(getTimeValue(b)))
       .slice(0, 10)
       .map((r) => ({
         id: r?.id ?? null,
@@ -64,21 +127,21 @@ const raw = await res.json();
         item_id: r?.item_id ?? null,
         item_name: r?.item_name ?? "",
         net_score: r?.net_score ?? "",
-        total_score: r?.total_score ?? ""
+        total_score: r?.total_score ?? "",
       }));
 
     const summary = {
       totalResults: scores.length,
+      totalFinishers: scores.filter(isFinisher).length,
       itemsCount: items.length,
-      top10
+      limitPerCategory,
+      resultsPreviewByCategory,
+      resultsPreview, // plano, por si tu módulo aún lo usa
+      top10,
     };
 
     return {
-      props: {
-        config,
-        data,
-        summary
-      }
+      props: { config, data, summary },
     };
   } catch (error) {
     return {
@@ -86,8 +149,8 @@ const raw = await res.json();
         error: error?.message ?? "Error cargando evento",
         config: null,
         data: null,
-        summary: null
-      }
+        summary: null,
+      },
     };
   }
 }
@@ -102,7 +165,7 @@ export default function EventPage({ config, data, summary, error }) {
     );
   }
 
-  
+  // ✅ Data enriquecida
   const enrichedData = { ...data, summary };
 
   return (
@@ -111,6 +174,7 @@ export default function EventPage({ config, data, summary, error }) {
     </EventShell>
   );
 }
+
 
 
 
