@@ -2,13 +2,18 @@
 @use '@/styles/scss/abstracts/' as *;
 
 .title {
-  padding: 2.5rem 2rem 2rem 2rem;
+  padding: 0rem 2rem 2rem 2rem;
   font-size: 3.9em;
   color: $complementaryColor;
+
+  @media (max-width: 932px) {
+    text-align: center;
+    font-size: 3em;
+  }
 }
 
 .Wrapper {
-    margin-top: 10px;
+    margin-top: 0px;
     padding: 0rem 0rem 0rem 2rem;
     display: flex;
     flex-direction: row;
@@ -16,10 +21,11 @@
     align-items: flex-start;
     gap: 2rem;
 
-    @media (max-width: 430px) {
+    @media (max-width: 932px) {
         flex-direction: column;
         align-items: center;
         padding: 0;
+        font-size: 1.05rem;
       }
     }
     

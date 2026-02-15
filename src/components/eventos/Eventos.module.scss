@@ -1,0 +1,130 @@
+@use "@/styles/scss/abstracts" as *;
+
+.wrapper {
+  padding: 0;
+  margin: 0;
+}
+
+.header {
+  margin-bottom: 0;
+}
+
+.heroContent {
+  max-width: 1200px;
+  margin: 0rem 2rem;
+}
+
+.textContent {
+  h2 {
+    margin-left: 0;
+    font-size: 3.9rem;
+    color: $complementaryColor;
+  }
+
+  p {
+    margin: 0;
+    font-size: 1.5em;
+    color: $complementaryColor;
+    margin-bottom: 20px;
+  }
+}
+
+.grid {
+  max-width: 1200px;
+  justify-content: space-between;
+  margin: 0 2rem;
+  display: grid;
+  gap: 5rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+}
+
+.card {
+  display: grid;
+  grid-template-rows: auto 1fr;
+  border-radius: 22px;
+  overflow: hidden;
+  text-decoration: none;
+  color: $complementaryColor;
+  border: 1px solid rgba(11, 18, 32, 0.08);
+  box-shadow: 0 10px 24px rgba(11, 18, 32, 0.08);
+  background: $brandColor;
+  transform: translateZ(0);
+  transition: transform 160ms ease, box-shadow 160ms ease, border-color 160ms ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 14px 34px rgba(11, 18, 32, 0.14);
+    border-color: rgba(11, 18, 32, 0.14);
+  }
+}
+
+.media {
+  position: relative;
+  width: 100%;
+  /* altura responsiva agradable */
+  height: clamp(170px, 18vw, 230px);
+  background: #0b1220;
+}
+
+.img {
+  object-fit: cover;
+}
+
+.overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(
+    180deg,
+    rgba(11, 18, 32, 0.05) 0%,
+    rgba(11, 18, 32, 0.28) 45%,
+    rgba(11, 18, 32, 0.62) 100%
+  );
+}
+
+.badge {
+  position: absolute;
+  top: 14px;
+  left: 14px;
+  padding: 0.35rem 0.65rem;
+  border-radius: 999px;
+  font-weight: 800;
+  font-size: 0.85rem;
+  background: rgba(255, 255, 255, 0.92);
+  color: #0b1220;
+}
+
+.body {
+  padding: 1.05rem 1.1rem 1.15rem;
+  display: grid;
+  gap: 0.55rem;
+}
+
+.title {
+  margin: 0;
+  font-size: 1.15rem;
+  line-height: 1.25;
+  font-weight: 900;
+}
+
+.cta {
+  font-weight: 900;
+  opacity: 0.9;
+}
+
+
+@media (max-width: 932px) {
+  .wrapper {
+    padding: 0rem 1rem 3rem;
+    text-align: center;
+  }
+
+  .media {
+    height: 190px;
+  }
+
+  .title {
+    font-size: 1.05rem;
+  }
+}
+
+

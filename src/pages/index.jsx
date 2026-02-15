@@ -25,8 +25,8 @@ function HomePage() {
   <meta name="twitter:image" content="https://miletoroseguros.vercel.app/public/backgrounds/Logo.png" />
           </Head>
 <HeroHome 
-  title="Te acompañamos en la medición de tiempos de tu evento deportivo"
-  description="Cronometraje con chips RFID, resultados en tiempo real, rankings automáticos y publicación inmediata de tiempos oficiales con experiencia, responsabilidad y tecnología de punta !"
+  title="Medición de tiempos para tu evento deportivo"
+  description="Cronometraje profesional con chips RFID, resultados en tiempo real, rankings automáticos y publicación inmediata de tiempos oficiales con precisión y tecnología de alto nivel. Lectura inteligente por chip y validación en puntos de control para entregar resultados confiables, certificados digitales personalizados y una experiencia impecable para tu evento"
   images={[
     { src: "/Carreras1.jpeg", alt: "Imagen metas en carreras" },
     { src: "/Carreras2.png", alt: "Imagen panorámica corredores" },

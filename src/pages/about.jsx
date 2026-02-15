@@ -15,14 +15,21 @@ function AboutPage() {
 
       <HeroHome
         title="Metrics Solutions"
-        description="Somos expertos en eventos deportivos. En 2025 acompañamos la Carrera Fuerza Rosa (Cúcuta), la Carrera Corazón Quindío (Montenegro) y permanentemente carreras de clubes de Running. Nuestros equipos cuentan con el respaldo de Feibot, tecnología de punta que soporta eventos en todo el mundo."
+        description="Somos especialistas en cronometraje de competencias multideportivas. Combinamos precisión, experiencia y estrategia para organizadores que buscan resultados confiables y una experiencia de primer nivel para sus participantes. En 2025 acompañamos eventos como la Carrera Fuerza Rosa (Cúcuta), la Carrera Corazón Quindío (Montenegro) y múltiples carreras de clubes de running en todo el país.
+
+        Nuestra tecnología reconocida internacionalmente, procesa grandes volúmenes de corredores con estabilidad y seguridad. Además del cronometraje oficial, ofrecemos visualización en línea de resultados, seguimiento intermedio y soporte integral durante todo el evento."
         images={[
+          
           { src: "/Logo.png", alt: "Logo de Metrics Solutions" }
+          
         ]}
+        
       >
         
       </HeroHome>
-    </Fragment>
+    </Fragment
+    
+    >
   );
 }
 

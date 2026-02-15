@@ -19,7 +19,8 @@
   "nav": [
     { "label": "Inicio", "href": "./" },
     { "label": "Resultados", "href": "./results" },
-    { "label": "En vivo", "href": "./live" }
+    { "label": "En vivo", "href": "./live" },
+    { "label": "Volver", "href": "/eventos" }
   ],
   "modules": [
     { "type": "hero", "enabled": true },

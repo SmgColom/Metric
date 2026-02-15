@@ -3,14 +3,14 @@
 
 .showcase {
   
-  margin-top:30px;
+  margin-top:0px;
   background: no-repeat center/cover;
   background-position: 20% 30%;
   height: 50vh;
   position: relative;
 
   @media (max-width: 760px){
-    margin-top: 60px;
+    margin-top: 0px;
   }
   
 
@@ -35,11 +35,11 @@
       @media (max-width: 760px){
         padding: 0rem 2rem 0rem 2rem;
       }
-      @media (max-width: 430px){
+      @media (max-width: 932px){
         font-size: 2.9em;
       }
     }
-  
+
     span {
       font-weight: 700;
     }

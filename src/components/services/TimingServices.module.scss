@@ -3,7 +3,7 @@
 .wrapper {
   display: flex;
   flex-direction: column;
-  padding: 2rem 2rem;
+  padding: 0rem 2rem;
   margin: 0 auto;
 }
 
@@ -26,6 +26,10 @@
   flex: 1;
   margin-top: 0;
   align-self: flex-start;
+
+  @media (max-width: 932px) {
+    text-align: center;
+  } 
 
   h2 {
     font-size: 3.9rem;
@@ -53,11 +57,15 @@
 }
 
 .mediaWrapper {
-  margin-top: 30px;
   width: 500px;
   height: 500px;
   overflow: hidden;
   border-radius: 20px;
+
+    @media (max-width: 932px) {
+
+    width: 100%;
+  } 
 }
 
 .video {
@@ -65,9 +73,8 @@
   height: 100%;
   object-fit: cover;
   object-position: center center;
+
 }
-
-
 
 .block {
   margin-bottom: 4rem;
@@ -76,6 +83,10 @@
     font-size: 3rem;
     color: $complementaryColor;
     margin-bottom: 2rem;
+
+    @media (max-width: 932px) {
+      text-align: center;
+    }
   }
 }
 
@@ -141,4 +152,5 @@
     color: $complementaryColor;
   }
 }
+
 

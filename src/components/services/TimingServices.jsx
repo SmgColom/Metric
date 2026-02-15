@@ -17,7 +17,7 @@ export default function TimingServices() {
             <h2>Nuestros Servicios</h2>
             <p>
               Soluciones profesionales para garantizar un cronometraje confiable,
-              preciso y alineado con los estándares de eventos deportivos. Te acompañamos en todo el territorio nacional con nuestro servicio que incluye:
+              preciso y alineado con los estándares de eventos deportivos. Incluímos a nivel nacional:
             </p>
             <Content
           features={[

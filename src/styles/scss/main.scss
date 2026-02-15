@@ -1,7 +1,21 @@
-// vendor imports
-
-// base imports
 @use './base/base';
 
+:root {
+  --header-offset: 0px;
+}
 
-// layout imports
+
+#__next {
+  padding-top: var(--header-offset);
+  transition: padding-top 220ms ease;
+}
+
+
+@media (max-width: 931px) {
+  body.menu-open {
+    overflow: hidden;
+  }
+}
+
+
+

@@ -6,12 +6,12 @@
 
 .main {
   margin: 0 auto;
-  margin-top: 7rem;
+  margin-top: 0rem;
   width: 100%;
   flex: 1 0 auto;
 
   @media (min-width:1024px) and (max-width: 1366px) {
-  margin-top: 9rem;  
+  margin-top: 2rem;  
   }
 }
 
