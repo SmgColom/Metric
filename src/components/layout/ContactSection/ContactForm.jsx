@@ -45,13 +45,13 @@
 
       // Enviar a Google Forms
 const formDataToSend = new FormData();
-formDataToSend.append("entry.2137210133", formData.Nombre);
-formDataToSend.append("entry.85802793", formData.Apellido);
-formDataToSend.append("entry.1410648333", formData.Celular);
-formDataToSend.append("entry.967153321", formData.email);
-formDataToSend.append("entry.896293727", formData.Mensaje);
+formDataToSend.append("entry.579349132", formData.Nombre);
+formDataToSend.append("entry.72538374", formData.Apellido);
+formDataToSend.append("entry.1528708666", formData.Celular);
+formDataToSend.append("entry.262369035", formData.email);
+formDataToSend.append("entry.478754071", formData.Mensaje);
      // Reemplaza la URL con la de tu formulario (vista pública)
-fetch("https://docs.google.com/forms/d/e/1FAIpQLSflq8LwsEpjMXZxpXzWzJqTC3BQSiJLKxA_shtjebM87QPiCA/formResponse", {
+fetch("https://docs.google.com/forms/d/e/1FAIpQLSfHFC_tIO0TxZA0Gh0kmxZ77H3008kgNPGBUJ2fdjUiO1Y8iw/formResponse", {
   method: "POST",
   mode: "no-cors",
   body: formDataToSend,
