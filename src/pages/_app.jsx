@@ -5,7 +5,7 @@ import { useRouter } from "next/router";
 
 import "@/styles/scss/main.scss";
 import Layout from "@/components/layout";
-import * as ga from "../lib/google-analytics";
+
 
 function App({ Component, pageProps }) {
   const router = useRouter();
@@ -27,17 +27,6 @@ function App({ Component, pageProps }) {
 
   return (
     <Fragment>
-      <Script
-        src={`https://www.googletagmanager.com/gtag/js?id=${process.env.NEXT_PUBLIC_GA_ID}`}
-        strategy="afterInteractive"
-      />
-      <Script id="google-analytics-script" strategy="afterInteractive">
-        {`window.dataLayer = window.dataLayer || [];
-function gtag(){dataLayer.push(arguments)}
-gtag('js', new Date());
-gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');`}
-      </Script>
-
       <Head>
         <meta
           name="google-site-verification"
@@ -46,7 +35,6 @@ gtag('config', '${process.env.NEXT_PUBLIC_GA_ID}');`}
         <link rel="icon" type="image/png" href="/Icon.png" />
       </Head>
 
-      {/* ✅ Si es /e/* NO uses el Layout global (para evitar doble navbar) */}
       {isEventRoute ? (
         <Component {...pageProps} />
       ) : (
