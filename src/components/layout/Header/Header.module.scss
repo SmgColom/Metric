@@ -218,7 +218,7 @@
     display: flex;
     position: absolute;
     right: 2rem;
-    top: 4rem;
+    top: 3rem;
 
     flex-direction: column;
     justify-content: space-between;
@@ -248,7 +248,7 @@
     align-items: flex-start;
     padding: 1rem 1.5rem;
 
-    // ✅ clave para que el header pueda crecer con el menú
+    
     height: auto;
 
     &::before {
@@ -257,8 +257,8 @@
 
     &::after {
       top: 1rem;
-      width: 60%;
-      height: 80%;
+      width: 45%;
+      height: 70%;
       border-radius: 60px 0 0 60px;
     }
   }
@@ -270,14 +270,13 @@
 
     &.active {
       display: block;
-      height: auto;           // ✅ no lo amarres a 25rem
+      height:500px;        
       padding-bottom: 1.25rem;
     }
 
     ul {
       flex-direction: column;
       text-align: right;
-      padding: 0rem 2rem;
 
       li {
         width: 100%;
