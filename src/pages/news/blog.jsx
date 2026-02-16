@@ -14,16 +14,16 @@
   <title>Infórmate | Metric Solutions</title>
   <meta 
     name="description"
-    content="Artículos de salud, cuidado personal y bienestar familiar. Aprende cómo proteger tu bienestar físico y mental con nuestros consejos de expertos."
+    content="Artículos de las ultimas tendencias del mundo del running en todo el planeta."
   />
-  <meta name="keywords" content="bienestar, salud, seguros, salud familiar, cuidado personal, artículos de salud" />
+  <meta name="keywords" content="running, salud, maraton, carrera, correr, artículos de running" />
   <meta name="robots" content="index, follow" />
-  <link rel="canonical" href="https://miletoroseguros.vercel.app/" />
-  <meta property="og:title" content="Salud y Bienestar | Seguros Mile Toro" />
-  <meta property="og:description" content="Explora consejos de salud, bienestar y protección para ti y tu familia." />
-  <meta property="og:image" content="https://miletoroseguros.vercel.app/public/backgrounds/Bienestar.jpg" />
+  <link rel="canonical" href="https://metric-omega.vercel.app/" />
+  <meta property="og:title" content="Metric Solutions | Tendencias running" />
+  <meta property="og:description" content="Explora que pasa en el mundo del running a nivel mundial." />
+  <meta property="og:image" content="https://metric-omega.vercel.app/public/backgrounds/Running.jpg" />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://miletoroseguros.vercel.app/news/blog" />
+  <meta property="og:url" content="https://metric-omega.vercel.app//news/blog" />
 </Head>
         <HeroSection 
           title="Tendencias"

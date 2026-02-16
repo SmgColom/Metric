@@ -8,21 +8,21 @@ const ContactPage = () => (
 
 <>
 <Head>
-  <title>Contáctame | Mile Toro | Asesora en Seguros Sura</title>
+  <title>Contáctanos | Metric Solutions</title>
   <meta 
     name="description" 
-    content="¿Tienes dudas o deseas una asesoría personalizada? Contáctame para encontrar juntos las mejores soluciones de seguros con el respaldo de Sura." 
+    content="¿Tienes dudas o deseas una asesoría personalizada? Contáctanos para encontrar juntos la mejor experiencia para tu evento deportivo" 
   />
-  <meta property="og:title" content="Contáctame | Mile Toro | Asesora en Seguros Sura" />
-  <meta property="og:description" content="¿Tienes dudas o deseas una asesoría personalizada? Contáctame para encontrar juntos las mejores soluciones de seguros con el respaldo de Sura." />
-  <meta property="og:image" content="https://miletoroseguros.vercel.app/public/backgrounds/Logo.png" />
+  <meta property="og:title" content="Contáctanos | Metric Solutions | Cronometraje de eventos deportivos" />
+  <meta property="og:description" content="¿Tienes dudas o deseas una asesoría personalizada? Contáctanos para encontrar juntos la mejor experiencia para tu evento deportivo" />
+  <meta property="og:image" content="https://metric-omega.vercel.app/public/Logo.png" />
   <meta property="og:type" content="website" />
-  <meta property="og:url" content="https://miletoroseguros.vercel.app/contact" />
+  <meta property="og:url" content="https://metric-omega.vercel.app/contact" />
 
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Contáctame | Mile Toro | Asesora en Seguros Sura" />
-  <meta name="twitter:description" content="¿Tienes dudas o deseas una asesoría personalizada? Contáctame para encontrar juntos las mejores soluciones de seguros con el respaldo de Sura." />
-  <meta name="twitter:image" content="https://miletoroseguros.vercel.app/public/backgrounds/Logo.jpg" />
+  <meta name="twitter:title" content="Contáctanos | Metric Solutions | Cronometraje de eventos deportivos" />
+  <meta name="twitter:description" content="¿Tienes dudas o deseas una asesoría personalizada? Contáctanos para encontrar juntos la mejor experiencia para tu evento deportivo" />
+  <meta name="twitter:image" content="https://metric-omega.vercel.app/public/Logo.png" />
 </Head>
   <h1 className={styles.title}><span>Contáctanos</span></h1>
   <div className={styles.Wrapper}>

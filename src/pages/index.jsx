@@ -10,19 +10,19 @@ function HomePage() {
         <title>Metric Solutions | Home</title>
         <meta
           name="description"
-          content="Soluciones de seguros personalizadas con el respaldo de Sura y la asesoría de Mile Toro."
+          content="Cronometraje de competencias multideportivas"
         />
-  <meta property="og:title" content="Seguros Mile Toro | Home" />
-  <meta property="og:description" content="Encuentra soluciones de seguros a tu medida con el respaldo de Sura y el acompañamiento de Mile Toro." />
-  <meta property="og:image" content="https://miletoroseguros.vercel.app/public/backgrounds/Logo.jpg" />
-  <meta property="og:url" content="https://miletoroseguros.vercel.app/" />
+  <meta property="og:title" content="Metric Solutions | Home" />
+  <meta property="og:description" content="Cronometraje profesional con chips RFID, resultados en tiempo real, rankings automáticos y publicación inmediata de tiempos oficiales con precisión y tecnología de alto nivel" />
+  <meta property="og:image" content="https://metric-omega.vercel.app//Logo.jpg" />
+  <meta property="og:url" content="https://metric-omega.vercel.app/" />
   <meta property="og:type" content="website" />
 
   {/* Meta adicional para Twitter (opcional, pero recomendado) */}
   <meta name="twitter:card" content="summary_large_image" />
-  <meta name="twitter:title" content="Seguros Mile Toro | Home" />
-  <meta name="twitter:description" content="Soluciones de seguros a tu medida con el respaldo de Sura y el acompañamiento de Mile Toro." />
-  <meta name="twitter:image" content="https://miletoroseguros.vercel.app/public/backgrounds/Logo.png" />
+  <meta name="twitter:title" content="Metric Solutions | Home" />
+  <meta name="twitter:description" content="https://metric-omega.vercel.app/" />
+  <meta name="twitter:image" content="https://metric-omega.vercel.app/Logo.png" />
           </Head>
 <HeroHome 
   title="Medición de tiempos para tu evento deportivo"
