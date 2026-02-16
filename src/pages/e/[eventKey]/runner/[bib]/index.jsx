@@ -79,13 +79,6 @@ function formatPace(pace) {
   return `${s} min/km`;
 }
 
-/**
- * Resolver valores especiales para la tabla:
- * - "race.items[].title" -> runner.item_name
- * - category_rank (fallback) -> calculado
- * - nuevos campos:
- *   - sex_display, pace_display, overall_rank_net, category_rank_net, gender_rank_net, total_finishers
- */
 function getRunnerValue(runner, key, computed) {
   if (key === "race.items[].title") return runner?.item_name;
 
@@ -215,11 +208,8 @@ export async function getServerSideProps({ params }) {
     const config = loadEventConfig(eventKey);
     if (!config?.feibot?.publicKey) return { notFound: true };
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-    const res = await fetch(`${baseUrl}/api/feibot/${config.feibot.publicKey}`);
-    if (!res.ok) throw new Error("Feibot API failed");
+    const raw = await fetchFeibotRace(config.feibot.publicKey);
 
-    const raw = await res.json();
     const base = normalizeFeibot(raw);
 
     const allScoresRaw = Array.isArray(raw?.scores) ? raw.scores : [];

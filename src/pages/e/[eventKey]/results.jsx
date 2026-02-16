@@ -148,10 +148,8 @@ export async function getServerSideProps({ params, query }) {
     const q = (query.q ?? "").toString().trim();
     const itemId = query.itemId ? toInt(query.itemId, null) : null;
 
-    const baseUrl = process.env.NEXT_PUBLIC_BASE_URL || "http://localhost:3000";
-    const res = await fetch(`${baseUrl}/api/feibot/${config.feibot.publicKey}`);
-    if (!res.ok) throw new Error("Feibot API failed");
-    const raw = await res.json();
+    const raw = await fetchFeibotRace(config.feibot.publicKey);
+
 
     const base = normalizeFeibot(raw);
 
