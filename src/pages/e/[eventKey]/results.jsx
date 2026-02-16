@@ -7,8 +7,6 @@ import { normalizeFeibot } from "@/lib/normalizeFeibot";
 import { fetchFeibotRace } from "@/lib/feibot";
 import { fixText } from "@/lib/textUtils";
 
-
-
 function buildQuery(base = {}, patch = {}) {
   const q = { ...base, ...patch };
   Object.keys(q).forEach((k) => {
@@ -33,7 +31,6 @@ function getTimeValue(r) {
   return r?.net_score ?? r?.total_score ?? "";
 }
 
-
 // ✅ Ritmo: "6:05" -> "6:05 min/km"
 function formatPace(pace) {
   if (pace === null || pace === undefined) return "-";
@@ -41,7 +38,6 @@ function formatPace(pace) {
   if (!s) return "-";
 
   if (/^\d{1,2}:\d{2}(:\d{2})?$/.test(s)) {
-    // Si viene HH:MM:SS lo llevamos a MM:SS (poco común pero por seguridad)
     const parts = s.split(":").map((x) => Number(x));
     if (parts.length === 3) {
       const mm = parts[0] * 60 + parts[1];
@@ -51,65 +47,7 @@ function formatPace(pace) {
     return `${s} min/km`;
   }
 
-  // fallback sin inventar conversiones
   return `${s} min/km`;
-}
-
-/**
- * ===== Split extractor (AUTO) =====
- * mode:
- * - "laps" -> usa loop_*_format (arrays) y muestra "Vuelta X: t" en vertical
- * - "checkpoints" -> usa cp1..cp9 (strings) y muestra "CPX: t" en vertical
- * - null -> nada
- */
-function extractLaps(score) {
-  const pick =
-    (Array.isArray(score?.loop_a_format) && score.loop_a_format) ||
-    (Array.isArray(score?.loop_b_format) && score.loop_b_format) ||
-    (Array.isArray(score?.loop_c_format) && score.loop_c_format) ||
-    null;
-
-  if (Array.isArray(pick) && pick.length) {
-    return pick
-      .map((l, idx) => ({
-        lap_number: l?.lap_number ?? idx + 1,
-        lap_time: typeof l?.lap_time === "string" ? l.lap_time : null,
-      }))
-      .filter((l) => l.lap_number && l.lap_time);
-  }
-
-  return null;
-}
-
-function extractCheckpoints(score) {
-  // cp1..cp9, solo los que tengan valor
-  const out = [];
-  for (let i = 1; i <= 9; i++) {
-    const k = `cp${i}`;
-    const v = score?.[k];
-    if (typeof v === "string" && v.trim()) out.push({ cp: i, time: v.trim() });
-  }
-  return out.length ? out : null;
-}
-
-function buildSplitLines({ laps, checkpoints }) {
-  if (Array.isArray(laps) && laps.length) {
-    return {
-      mode: "laps",
-      header: "Vueltas",
-      lines: laps.map((l) => `Vuelta ${l.lap_number}: ${l.lap_time}`),
-    };
-  }
-
-  if (Array.isArray(checkpoints) && checkpoints.length) {
-    return {
-      mode: "checkpoints",
-      header: "Checkpoints",
-      lines: checkpoints.map((c) => `CP${c.cp}: ${c.time}`),
-    };
-  }
-
-  return { mode: null, header: null, lines: [] };
 }
 
 export async function getServerSideProps({ params, query, res }) {
@@ -119,8 +57,6 @@ export async function getServerSideProps({ params, query, res }) {
     const config = loadEventConfig(eventKey);
     if (!config?.feibot?.publicKey) return { notFound: true };
 
-    // (Opcional) cache CDN en Vercel para esta página SSR
-    // OJO: si "live" cambia mucho, bájalo a 5-10s.
     res?.setHeader?.("Cache-Control", "s-maxage=15, stale-while-revalidate=120");
 
     const page = Math.max(1, toInt(query.page, 1));
@@ -129,29 +65,23 @@ export async function getServerSideProps({ params, query, res }) {
     const itemId = query.itemId ? toInt(query.itemId, null) : null;
 
     const raw = await fetchFeibotRace(config.feibot.publicKey);
-    console.log("[Feibot] scores:", Array.isArray(raw?.scores) ? raw.scores.length : 0);
+
     // ✅ base info del evento (pero SIN scores gigantes)
     const baseFull = normalizeFeibot(raw);
-
-    // Quita cualquier posible scores dentro del objeto base
     const { scores: _scoresOmit, ...base } = baseFull ?? {};
-    // (por si normalizeFeibot anida algo raro)
     if (base?.race?.scores) delete base.race.scores;
 
-    // scores crudos
     const allScoresRaw = Array.isArray(raw?.scores) ? raw.scores : [];
 
     // ====== Split meta (sin mapear TODO si no hace falta)
-    // muestreamos solo una parte para detectar si hay laps o cps en el evento
     const sample = allScoresRaw.slice(0, 300);
 
-    const sampleHasLaps = sample.some((r) => {
-      return (
+    const sampleHasLaps = sample.some(
+      (r) =>
         (Array.isArray(r?.loop_a_format) && r.loop_a_format.length) ||
         (Array.isArray(r?.loop_b_format) && r.loop_b_format.length) ||
         (Array.isArray(r?.loop_c_format) && r.loop_c_format.length)
-      );
-    });
+    );
 
     const sampleHasCps = sample.some((r) => {
       for (let i = 1; i <= 9; i++) {
@@ -167,20 +97,17 @@ export async function getServerSideProps({ params, query, res }) {
       ? { enabled: true, mode: "checkpoints", header: "Checkpoints" }
       : { enabled: false, mode: null, header: null };
 
-    // ====== Limpieza mínima para filtros/búsqueda/sorting (SIN clonar objetos enormes)
-    // OJO: aquí NO hacemos map() gigante con {...r}
-    // Solo leemos lo necesario para filtrar/ordenar.
+    // ====== filtros / orden / búsqueda
     let filtered = allScoresRaw;
 
-    // filtro por categoría
     if (itemId) {
       filtered = filtered.filter((r) => Number(r?.item_id) === Number(itemId));
     }
 
-    // orden por tiempo neto
-    filtered = [...filtered].sort((a, b) => timeToSeconds(getTimeValue(a)) - timeToSeconds(getTimeValue(b)));
+    filtered = [...filtered].sort(
+      (a, b) => timeToSeconds(getTimeValue(a)) - timeToSeconds(getTimeValue(b))
+    );
 
-    // búsqueda
     if (q) {
       const qq = q.toLowerCase();
       filtered = filtered.filter((r) => {
@@ -198,8 +125,7 @@ export async function getServerSideProps({ params, query, res }) {
     const start = (safePage - 1) * pageSize;
     const pageRows = filtered.slice(start, start + pageSize);
 
-    // ====== Ranking por género (GLOBAL) (necesita allScoresRaw)
-    // Si esto se te pone pesado con eventos gigantes, luego lo optimizamos con cache en API.
+    // ====== Ranking por género (GLOBAL)
     const genderRankMap = new Map();
     const genderGroups = new Map();
 
@@ -212,14 +138,16 @@ export async function getServerSideProps({ params, query, res }) {
     }
 
     for (const [sex, arr] of genderGroups.entries()) {
-      const sorted = [...arr].sort((a, b) => timeToSeconds(getTimeValue(a)) - timeToSeconds(getTimeValue(b)));
+      const sorted = [...arr].sort(
+        (a, b) => timeToSeconds(getTimeValue(a)) - timeToSeconds(getTimeValue(b))
+      );
       sorted.forEach((r, idx) => {
         const bib = String(r?.bib ?? "");
         genderRankMap.set(`${sex}::${bib}`, idx + 1);
       });
     }
 
-    // ====== Construir SOLO las filas que renderizas (payload liviano)
+    // ====== filas livianas
     const rowsSlim = pageRows.map((r) => {
       const bib = String(r?.bib ?? "");
       const sex = (r?.sex ?? "").toString().trim().toUpperCase();
@@ -253,34 +181,27 @@ export async function getServerSideProps({ params, query, res }) {
         }
       }
 
-      const time = r?.net_score ?? r?.total_score ?? "";
-
       return {
-        // campos para UI
         id: r?.id ?? null,
         name: fixText(r?.name) ?? "-",
         bib,
         item_name: fixText(r?.item_name) ?? "-",
+
         net_score: r?.net_score ?? null,
         total_score: r?.total_score ?? null,
 
-        // ranks
         overallRank: r?.net_ranking ?? null,
         categoryRank: r?.item_net_ranking ?? null,
         genderRank: sex ? genderRankMap.get(`${sex}::${bib}`) ?? null : null,
         sex,
 
-        // pace display
         paceDisplay: formatPace(r?.pace),
-
-        // splits
         splitLines,
       };
     });
 
     const data = {
       ...base,
-      // ✅ SOLO lo necesario:
       results: rowsSlim,
       resultsMeta: {
         total,
@@ -305,7 +226,6 @@ export async function getServerSideProps({ params, query, res }) {
     };
   }
 }
-
 
 export default function ResultsPage({ config, data, error }) {
   if (error || !config) {
@@ -357,7 +277,11 @@ export default function ResultsPage({ config, data, error }) {
             marginBottom: 16,
           }}
         >
-          <form action={basePath} method="GET" style={{ display: "flex", gap: 8, alignItems: "center" }}>
+          <form
+            action={basePath}
+            method="GET"
+            style={{ display: "flex", gap: 8, alignItems: "center" }}
+          >
             <input type="hidden" name="pageSize" value={meta.pageSize ?? 25} />
             <input type="hidden" name="itemId" value={meta.itemId ?? ""} />
 
@@ -387,7 +311,10 @@ export default function ResultsPage({ config, data, error }) {
             </button>
 
             {meta.q || meta.itemId ? (
-              <Link href={makeHref({ q: "", itemId: "", page: 1 })} style={{ padding: "10px 8px", display: "inline-block" }}>
+              <Link
+                href={makeHref({ q: "", itemId: "", page: 1 })}
+                style={{ padding: "10px 8px", display: "inline-block" }}
+              >
                 Limpiar
               </Link>
             ) : null}
@@ -432,7 +359,7 @@ export default function ResultsPage({ config, data, error }) {
 
         <div style={{ marginBottom: 12, fontSize: 14, opacity: 0.8 }}>
           {meta.total ?? 0} resultados — página {meta.page ?? 1} de {meta.totalPages ?? 1}
-          {splitEnabled ? ` — incluye ${splitHeader.toLowerCase()}` : ""}
+          {splitEnabled ? ` — incluye ${String(splitHeader).toLowerCase()}` : ""}
         </div>
 
         <div style={{ overflowX: "auto" }}>
@@ -476,16 +403,31 @@ export default function ResultsPage({ config, data, error }) {
                 const time = r?.net_score ?? r?.total_score ?? "";
                 const bibStr = String(r?.bib ?? "");
 
-                const runnerHref = `/e/${config.eventKey}/runner/${encodeURIComponent(bibStr)}`;
-                const certificateHref = `/e/${config.eventKey}/runner/${encodeURIComponent(bibStr)}/certificate`;
+                // ✅ FIX: tu detalle de corredor es /runner?bib=...
+                const runnerHref = `/e/${config.eventKey}/runner?bib=${encodeURIComponent(bibStr)}`;
+
+                // ✅ FIX: tu certificado está en /runner/certificate?bib=...
+                const certificateHref = `/e/${config.eventKey}/runner/certificate?bib=${encodeURIComponent(
+                  bibStr
+                )}`;
 
                 return (
                   <tr key={r.id ?? `${bibStr}-${idx}`}>
-                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>{absoluteIndex}</td>
-                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>{r?.overallRank ?? "-"}</td>
-                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>{r?.genderRank ?? "-"}</td>
-                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>{r?.sex ? String(r.sex).toUpperCase() : "-"}</td>
-                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>{r?.categoryRank ?? "-"}</td>
+                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>
+                      {absoluteIndex}
+                    </td>
+                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>
+                      {r?.overallRank ?? "-"}
+                    </td>
+                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>
+                      {r?.genderRank ?? "-"}
+                    </td>
+                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>
+                      {r?.sex ? String(r.sex).toUpperCase() : "-"}
+                    </td>
+                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>
+                      {r?.categoryRank ?? "-"}
+                    </td>
 
                     <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>
                       {bibStr ? (
@@ -497,10 +439,18 @@ export default function ResultsPage({ config, data, error }) {
                       )}
                     </td>
 
-                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>{bibStr || "-"}</td>
-                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>{r?.item_name ?? "-"}</td>
-                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>{time || "-"}</td>
-                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>{r?.paceDisplay ?? "-"}</td>
+                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>
+                      {bibStr || "-"}
+                    </td>
+                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>
+                      {r?.item_name ?? "-"}
+                    </td>
+                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>
+                      {time || "-"}
+                    </td>
+                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>
+                      {r?.paceDisplay ?? "-"}
+                    </td>
 
                     {splitEnabled ? (
                       <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>
@@ -584,6 +534,7 @@ export default function ResultsPage({ config, data, error }) {
     </EventShell>
   );
 }
+
 
 
 

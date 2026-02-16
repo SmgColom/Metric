@@ -1,17 +1,15 @@
+// src/pages/e/[eventKey]/runner/index.jsx
 import Link from "next/link";
 import EventShell from "@/components/event/EventShell";
-import { toInt } from "@/lib/number";
 import { loadEventConfig } from "@/lib/loadEventConfig";
 import { normalizeFeibot } from "@/lib/normalizeFeibot";
 import { feibotI18n } from "@/lib/i18n";
 import { fetchFeibotRace } from "@/lib/feibot";
 import { fixText } from "@/lib/textUtils";
 
-
 // ===== i18n helpers =====
 const dictES = feibotI18n?.es ?? {};
 function tKey(key) {
-  // Ajustes solicitados de nombres visibles
   if (key === "race.items[].title") return "Categoría";
   if (key === "sex_display") return "Género";
   if (key === "pace_display") return "Ritmo";
@@ -19,6 +17,12 @@ function tKey(key) {
   if (key === "category_rank_net") return "Posición Categoría";
   if (key === "gender_rank_net") return "Posición Género";
   if (key === "total_finishers") return "Total corredores";
+
+  if (key === "split_point") return "Punto";
+  if (key === "split_distance") return "Distancia";
+  if (key === "split_time_total") return "Tiempo (acumulado)";
+  if (key === "split_time_lap") return "Tiempo (parcial)";
+  if (key === "split_pace") return "Ritmo";
 
   return dictES[key] ?? key;
 }
@@ -51,18 +55,17 @@ function getTimeValue(r) {
   return r?.net_score ?? r?.total_score ?? "";
 }
 
-// Ritmo con unidad
 function formatPace(pace) {
   if (pace === null || pace === undefined) return "-";
   const s = String(pace).trim();
   if (!s) return "-";
+  // no dupliques si ya viene con unidad
+  if (/min\/km/i.test(s)) return s;
   return `${s} min/km`;
 }
 
 function getRunnerValue(runner, key, computed) {
   if (key === "race.items[].title") return runner?.item_name;
-
-  if (key === "category_rank") return computed?.categoryRankFallback ?? null;
 
   if (key === "sex_display") return runner?.sex ?? runner?.gender ?? "-";
   if (key === "pace_display") return computed?.paceDisplay ?? "-";
@@ -76,14 +79,12 @@ function getRunnerValue(runner, key, computed) {
   return runner?.[key];
 }
 
-// Genera filas [label, value] usando i18n + computed
 function buildFields(runner, keys, computed) {
   return keys
     .map((k) => [tKey(k), getRunnerValue(runner, k, computed)])
     .filter(([, v]) => isScalar(v) && String(v) !== "");
 }
 
-// Detecta splits array en runner (si existiera)
 function extractSplitsFromRunner(runner) {
   const candidates = ["splits", "laps", "checkpoints", "points", "passings", "segments"];
   for (const key of candidates) {
@@ -93,7 +94,6 @@ function extractSplitsFromRunner(runner) {
   return [];
 }
 
-// Normaliza split genérico (si viene como array)
 function normalizeSplit(x, idx) {
   const point =
     x?.point ??
@@ -117,7 +117,6 @@ function normalizeSplit(x, idx) {
   };
 }
 
-// ===== Parciales desde Feibot (sin array) =====
 function extractLapsFromFeibot(runner) {
   const loopArrays = ["loop_a_format", "loop_b_format", "loop_c_format"];
 
@@ -162,7 +161,6 @@ function extractCheckpointsFromFeibot(runner) {
   return out;
 }
 
-// ===== Ranking por género (net) =====
 function computeGenderRankNet(allScores, runner) {
   const sex = (runner?.sex ?? runner?.gender ?? "").toString().trim().toUpperCase();
   const bib = String(runner?.bib ?? "");
@@ -184,213 +182,119 @@ function computeGenderRankNet(allScores, runner) {
 export async function getServerSideProps({ params, query, res }) {
   const { eventKey } = params;
 
+  const bibRaw = Array.isArray(query?.bib) ? query.bib[0] : query?.bib;
+  const bib = String(bibRaw ?? "").trim();
+
   try {
     const config = loadEventConfig(eventKey);
     if (!config?.feibot?.publicKey) return { notFound: true };
 
-    // (Opcional) cache CDN en Vercel para esta página SSR
-    // OJO: si "live" cambia mucho, bájalo a 5-10s.
     res?.setHeader?.("Cache-Control", "s-maxage=15, stale-while-revalidate=120");
 
-    const page = Math.max(1, toInt(query.page, 1));
-    const pageSize = Math.min(100, Math.max(10, toInt(query.pageSize, 25)));
-    const q = (query.q ?? "").toString().trim();
-    const itemId = query.itemId ? toInt(query.itemId, null) : null;
+    // Protección extra: si algo manda certificate como bib, mostramos error claro
+    if (!bib || bib.toLowerCase() === "certificate") {
+      return {
+        props: {
+          error: !bib
+            ? "No se especificó dorsal (bib) en la URL. Ej: /runner?bib=1105"
+            : 'Ruta inválida: "certificate" llegó como bib. Esto pasa cuando aún existe la ruta /runner/[bib]. Borra src/pages/e/[eventKey]/runner/[bib]/.',
+          config,
+          data: null,
+          runner: null,
+          computed: null,
+          splits: [],
+          eventKey,
+        },
+      };
+    }
 
     const raw = await fetchFeibotRace(config.feibot.publicKey);
 
-    // ✅ base info del evento (pero SIN scores gigantes)
     const baseFull = normalizeFeibot(raw);
-
-    // Quita cualquier posible scores dentro del objeto base
-    const { scores: _scoresOmit, ...base } = baseFull ?? {};
-    // (por si normalizeFeibot anida algo raro)
+    const { scores: _omit, ...base } = baseFull ?? {};
     if (base?.race?.scores) delete base.race.scores;
 
-    // scores crudos
-    const allScoresRaw = Array.isArray(raw?.scores) ? raw.scores : [];
+    const allScores = Array.isArray(raw?.scores) ? raw.scores : [];
 
-    // ====== Split meta (sin mapear TODO si no hace falta)
-    // muestreamos solo una parte para detectar si hay laps o cps en el evento
-    const sample = allScoresRaw.slice(0, 300);
+    const bibAsNumber = Number(bib);
+    const bibAlt = Number.isFinite(bibAsNumber) ? String(bibAsNumber) : null;
 
-    const sampleHasLaps = sample.some((r) => {
-      return (
-        (Array.isArray(r?.loop_a_format) && r.loop_a_format.length) ||
-        (Array.isArray(r?.loop_b_format) && r.loop_b_format.length) ||
-        (Array.isArray(r?.loop_c_format) && r.loop_c_format.length)
-      );
-    });
+    const runner =
+      allScores.find((r) => String(r?.bib ?? "").trim() === bib) ??
+      (bibAlt ? allScores.find((r) => String(r?.bib ?? "").trim() === bibAlt) : null) ??
+      null;
 
-    const sampleHasCps = sample.some((r) => {
-      for (let i = 1; i <= 9; i++) {
-        const v = r?.[`cp${i}`];
-        if (typeof v === "string" && v.trim()) return true;
-      }
-      return false;
-    });
-
-    const splitMeta = sampleHasLaps
-      ? { enabled: true, mode: "laps", header: "Vueltas" }
-      : sampleHasCps
-      ? { enabled: true, mode: "checkpoints", header: "Checkpoints" }
-      : { enabled: false, mode: null, header: null };
-
-    // ====== Limpieza mínima para filtros/búsqueda/sorting (SIN clonar objetos enormes)
-    // OJO: aquí NO hacemos map() gigante con {...r}
-    // Solo leemos lo necesario para filtrar/ordenar.
-    let filtered = allScoresRaw;
-
-    // filtro por categoría
-    if (itemId) {
-      filtered = filtered.filter((r) => Number(r?.item_id) === Number(itemId));
-    }
-
-    // orden por tiempo neto
-    filtered = [...filtered].sort((a, b) => timeToSeconds(getTimeValue(a)) - timeToSeconds(getTimeValue(b)));
-
-    // búsqueda
-    if (q) {
-      const qq = q.toLowerCase();
-      filtered = filtered.filter((r) => {
-        const name = fixText(r?.name ?? "").toString().toLowerCase();
-        const bib = (r?.bib ?? "").toString().toLowerCase();
-        const idCard = (r?.id_card ?? "").toString().toLowerCase();
-        return name.includes(qq) || bib.includes(qq) || idCard.includes(qq);
-      });
-    }
-
-    // paginación
-    const total = filtered.length;
-    const totalPages = Math.max(1, Math.ceil(total / pageSize));
-    const safePage = Math.min(page, totalPages);
-    const start = (safePage - 1) * pageSize;
-    const pageRows = filtered.slice(start, start + pageSize);
-
-    // ====== Ranking por género (GLOBAL) (necesita allScoresRaw)
-    // Si esto se te pone pesado con eventos gigantes, luego lo optimizamos con cache en API.
-    const genderRankMap = new Map();
-    const genderGroups = new Map();
-
-    for (const r of allScoresRaw) {
-      const sex = (r?.sex ?? "").toString().trim().toUpperCase();
-      const bib = String(r?.bib ?? "");
-      if (!sex || !bib) continue;
-      if (!genderGroups.has(sex)) genderGroups.set(sex, []);
-      genderGroups.get(sex).push(r);
-    }
-
-    for (const [sex, arr] of genderGroups.entries()) {
-      const sorted = [...arr].sort((a, b) => timeToSeconds(getTimeValue(a)) - timeToSeconds(getTimeValue(b)));
-      sorted.forEach((r, idx) => {
-        const bib = String(r?.bib ?? "");
-        genderRankMap.set(`${sex}::${bib}`, idx + 1);
-      });
-    }
-
-    // ====== Construir SOLO las filas que renderizas (payload liviano)
-    const rowsSlim = pageRows.map((r) => {
-      const bib = String(r?.bib ?? "");
-      const sex = (r?.sex ?? "").toString().trim().toUpperCase();
-
-      // splits SOLO para la fila actual
-      let splitLines = [];
-      if (splitMeta.enabled) {
-        if (splitMeta.mode === "laps") {
-          const pick =
-            (Array.isArray(r?.loop_a_format) && r.loop_a_format) ||
-            (Array.isArray(r?.loop_b_format) && r.loop_b_format) ||
-            (Array.isArray(r?.loop_c_format) && r.loop_c_format) ||
-            null;
-
-          if (Array.isArray(pick) && pick.length) {
-            splitLines = pick
-              .map((l, idx) => {
-                const n = l?.lap_number ?? idx + 1;
-                const t = typeof l?.lap_time === "string" ? l.lap_time : "";
-                return n && t ? `Vuelta ${n}: ${t}` : null;
-              })
-              .filter(Boolean);
-          }
-        } else if (splitMeta.mode === "checkpoints") {
-          const out = [];
-          for (let i = 1; i <= 9; i++) {
-            const v = r?.[`cp${i}`];
-            if (typeof v === "string" && v.trim()) out.push(`CP${i}: ${v.trim()}`);
-          }
-          splitLines = out;
-        }
-      }
-
-      const time = r?.net_score ?? r?.total_score ?? "";
-
+    if (!runner) {
       return {
-        // campos para UI
-        id: r?.id ?? null,
-        name: fixText(r?.name) ?? "-",
-        bib,
-        item_name: fixText(r?.item_name) ?? "-",
-        net_score: r?.net_score ?? null,
-        total_score: r?.total_score ?? null,
-
-        // ranks
-        overallRank: r?.net_ranking ?? null,
-        categoryRank: r?.item_net_ranking ?? null,
-        genderRank: sex ? genderRankMap.get(`${sex}::${bib}`) ?? null : null,
-        sex,
-
-        // pace display
-        paceDisplay: formatPace(r?.pace),
-
-        // splits
-        splitLines,
+        props: {
+          error: "Corredor no encontrado para ese bib.",
+          config,
+          data: base,
+          runner: null,
+          computed: null,
+          splits: [],
+          eventKey,
+        },
       };
-    });
+    }
 
-    const data = {
-      ...base,
-      // ✅ SOLO lo necesario:
-      results: rowsSlim,
-      resultsMeta: {
-        total,
-        page: safePage,
-        pageSize,
-        totalPages,
-        q,
-        itemId,
-        splitEnabled: splitMeta.enabled,
-        splitHeader: splitMeta.header,
-      },
+    const computed = {
+      overallRankNet: runner?.net_ranking ?? null,
+      categoryRankNet: runner?.item_net_ranking ?? null,
+      genderRankNet: computeGenderRankNet(allScores, runner),
+      totalFinishers: allScores.length,
+      paceDisplay: formatPace(runner?.pace),
     };
 
-    return { props: { config, data } };
+    let splits = [];
+    const generic = extractSplitsFromRunner(runner);
+
+    if (Array.isArray(generic) && generic.length) {
+      splits = generic.map(normalizeSplit);
+    } else {
+      const laps = extractLapsFromFeibot(runner);
+      const cps = extractCheckpointsFromFeibot(runner);
+      splits = laps.length ? laps : cps.length ? cps : [];
+    }
+
+    const runnerClean = {
+      ...runner,
+      name: fixText(runner?.name) ?? runner?.name ?? "-",
+      item_name: fixText(runner?.item_name) ?? runner?.item_name ?? "-",
+    };
+
+    return {
+      props: {
+        config,
+        data: base,
+        runner: runnerClean,
+        computed,
+        splits,
+        eventKey,
+      },
+    };
   } catch (error) {
     return {
       props: {
-        error: error?.message ?? "Error cargando resultados",
+        error: error?.message ?? "Error cargando corredor",
         config: null,
         data: null,
+        runner: null,
+        computed: null,
+        splits: [],
+        eventKey,
       },
     };
   }
 }
 
-
-export default function RunnerDetailPage({
-  config,
-  data,
-  runner,
-  computed,
-  splits,
-  error,
-  eventKey,
-}) {
+export default function RunnerDetailPage({ config, data, runner, computed, splits, error, eventKey }) {
   if (error || !config || !runner || !eventKey || !computed) {
     return (
       <div style={{ padding: 24 }}>
         <h1>Corredor no disponible</h1>
         <p>{error ?? "No se pudo cargar el corredor."}</p>
-        <Link href="/" style={{ display: "inline-block", padding: "8px 0" }}>
+        <Link href={`/e/${eventKey ?? ""}/results`} style={{ display: "inline-block", padding: "8px 0" }}>
           Volver
         </Link>
       </div>
@@ -398,7 +302,8 @@ export default function RunnerDetailPage({
   }
 
   const resultsHref = `/e/${eventKey}/results`;
-  const certificateHref = `/e/${eventKey}/runner/${encodeURIComponent(runner?.bib ?? "")}/certificate`;
+
+  const certificateHref = `/e/${eventKey}/runner/certificate?bib=${encodeURIComponent(runner?.bib ?? "")}`;
 
   const leftKeys = ["bib", "name", "sex_display", "race.items[].title"];
 
@@ -449,9 +354,7 @@ export default function RunnerDetailPage({
           </Link>
         </div>
 
-        <h1 style={{ margin: "8px 0 12px" }}>
-          {runner?.name ? safeStr(runner.name) : "Detalle del corredor"}
-        </h1>
+        <h1 style={{ margin: "8px 0 12px" }}>{runner?.name ? safeStr(runner.name) : "Detalle del corredor"}</h1>
 
         <div
           style={{
@@ -474,44 +377,32 @@ export default function RunnerDetailPage({
             <table style={{ width: "100%", borderCollapse: "collapse", minWidth: 760 }}>
               <thead>
                 <tr>
-                  {["split_point", "split_distance", "split_time_total", "split_time_lap", "split_pace"].map(
-                    (k) => (
-                      <th
-                        key={k}
-                        style={{
-                          textAlign: "left",
-                          padding: "10px 8px",
-                          borderBottom: "1px solid #eee",
-                          fontSize: 13,
-                          opacity: 0.8,
-                          whiteSpace: "nowrap",
-                        }}
-                      >
-                        {tKey(k)}
-                      </th>
-                    )
-                  )}
+                  {["split_point", "split_distance", "split_time_total", "split_time_lap", "split_pace"].map((k) => (
+                    <th
+                      key={k}
+                      style={{
+                        textAlign: "left",
+                        padding: "10px 8px",
+                        borderBottom: "1px solid #eee",
+                        fontSize: 13,
+                        opacity: 0.8,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {tKey(k)}
+                    </th>
+                  ))}
                 </tr>
               </thead>
 
               <tbody>
                 {splits.map((s, i) => (
                   <tr key={`${s.point}-${i}`}>
-                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>
-                      {safeStr(s.point)}
-                    </td>
-                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>
-                      {safeStr(s.distance)}
-                    </td>
-                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>
-                      {safeStr(s.time)}
-                    </td>
-                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>
-                      {safeStr(s.lapTime)}
-                    </td>
-                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>
-                      {safeStr(s.pace)}
-                    </td>
+                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>{safeStr(s.point)}</td>
+                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>{safeStr(s.distance)}</td>
+                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>{safeStr(s.time)}</td>
+                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>{safeStr(s.lapTime)}</td>
+                    <td style={{ padding: "10px 8px", borderBottom: "1px solid #f2f2f2" }}>{safeStr(s.pace)}</td>
                   </tr>
                 ))}
               </tbody>
@@ -554,6 +445,10 @@ function InfoTable({ title, rows }) {
     </div>
   );
 }
+
+
+
+
 
 
 

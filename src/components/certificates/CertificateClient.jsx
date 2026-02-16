@@ -377,9 +377,7 @@ export default function CertificateClient({ config, data, runner, computed, cate
 
   return (
     <section style={{ paddingTop: 10 }}>
-      <Link href={backHref} style={{ display: "inline-block", padding: "8px 0" }}>
-        ← Volver al corredor
-      </Link>
+
 
       <h1 style={{ margin: "8px 0 10px" }}>Certificado</h1>
 
