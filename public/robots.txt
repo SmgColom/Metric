@@ -3,7 +3,7 @@ User-agent: *
 Allow: /
 
 # Host
-Host: https://miletoroseguros.vercel.app
+Host: https://metric-omega.vercel.app/
 
 # Sitemaps
-Sitemap: https://miletoroseguros.vercel.app/sitemap.xml
+Sitemap: https://metric-omega.vercel.app//sitemap.xml
