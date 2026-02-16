@@ -1,5 +1,7 @@
 // src/pages/api/feibot/[publicKey].js
 import { fetchFeibotRace } from "@/lib/feibot";
+import { toInt } from "@/lib/number";
+
 
 // ===== Helpers =====
 function toInt(v, fallback) {

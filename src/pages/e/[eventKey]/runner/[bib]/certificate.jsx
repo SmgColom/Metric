@@ -2,9 +2,11 @@
 import dynamic from "next/dynamic";
 import Link from "next/link";
 import EventShell from "@/components/event/EventShell";
-
+import { toInt } from "@/lib/number";
 import { loadEventConfig } from "@/lib/loadEventConfig";
 import { normalizeFeibot } from "@/lib/normalizeFeibot";
+import { fetchFeibotRace } from "@/lib/feibot";
+import { fixText } from "@/lib/textUtils";
 
 // ✅ react-pdf SOLO en cliente
 const CertificateClient = dynamic(
@@ -94,107 +96,200 @@ function computeGenderRankNet(allScores, runner) {
   return idx >= 0 ? idx + 1 : null;
 }
 
-export async function getServerSideProps({ params }) {
-  const { eventKey, bib } = params;
+export async function getServerSideProps({ params, query, res }) {
+  const { eventKey } = params;
 
   try {
     const config = loadEventConfig(eventKey);
     if (!config?.feibot?.publicKey) return { notFound: true };
 
-    // ✅ Si el evento no tiene certificado activado, 404
-    if (!config?.certificate?.enabled) return { notFound: true };
+    // (Opcional) cache CDN en Vercel para esta página SSR
+    // OJO: si "live" cambia mucho, bájalo a 5-10s.
+    res?.setHeader?.("Cache-Control", "s-maxage=15, stale-while-revalidate=120");
 
-    // ✅ Validación mínima del template
-    const tpl = config?.certificate?.template;
-    if (!tpl?.src || !tpl?.width || !tpl?.height) {
-      return {
-        props: {
-          error:
-            "El certificado está habilitado pero falta configurar certificate.template (src/width/height) en el JSON del evento.",
-          config: null,
-          data: null,
-          runner: null,
-          computed: null,
-          eventKey,
-          bib,
-        },
-      };
-    }
+    const page = Math.max(1, toInt(query.page, 1));
+    const pageSize = Math.min(100, Math.max(10, toInt(query.pageSize, 25)));
+    const q = (query.q ?? "").toString().trim();
+    const itemId = query.itemId ? toInt(query.itemId, null) : null;
 
     const raw = await fetchFeibotRace(config.feibot.publicKey);
 
-    const base = normalizeFeibot(raw);
+    // ✅ base info del evento (pero SIN scores gigantes)
+    const baseFull = normalizeFeibot(raw);
 
+    // Quita cualquier posible scores dentro del objeto base
+    const { scores: _scoresOmit, ...base } = baseFull ?? {};
+    // (por si normalizeFeibot anida algo raro)
+    if (base?.race?.scores) delete base.race.scores;
+
+    // scores crudos
     const allScoresRaw = Array.isArray(raw?.scores) ? raw.scores : [];
-    const allScores = allScoresRaw.map(sanitizeRunner);
 
-    const runner = allScores.find((r) => String(r?.bib ?? "") === String(bib));
-    if (!runner) return { notFound: true };
+    // ====== Split meta (sin mapear TODO si no hace falta)
+    // muestreamos solo una parte para detectar si hay laps o cps en el evento
+    const sample = allScoresRaw.slice(0, 300);
 
-    // ✅ Total corredores (finalizadores)
-    const totalFinishers = allScores.filter((r) => Number(r?.finisher) === 1).length;
-
-    // ✅ Posición general (net) desde Feibot
-    const overallRankNet = runner?.net_ranking ?? null;
-
-    // ✅ Posición por categoría (net) desde Feibot (si existe)
-    const categoryRankNetFromApi = runner?.item_net_ranking ?? null;
-
-    // ✅ Fallback categoría si no viene item_net_ranking
-    let categoryRankFallback = null;
-    if (!categoryRankNetFromApi) {
-      const catId = Number(runner?.item_id ?? 0);
-      const sameCategory = allScores.filter((r) => Number(r?.item_id ?? 0) === catId);
-      const sorted = [...sameCategory].sort(
-        (a, b) => timeToSeconds(getTimeValue(a)) - timeToSeconds(getTimeValue(b))
+    const sampleHasLaps = sample.some((r) => {
+      return (
+        (Array.isArray(r?.loop_a_format) && r.loop_a_format.length) ||
+        (Array.isArray(r?.loop_b_format) && r.loop_b_format.length) ||
+        (Array.isArray(r?.loop_c_format) && r.loop_c_format.length)
       );
-      const idx = sorted.findIndex((r) => String(r?.bib ?? "") === String(bib));
-      categoryRankFallback = idx >= 0 ? idx + 1 : null;
+    });
+
+    const sampleHasCps = sample.some((r) => {
+      for (let i = 1; i <= 9; i++) {
+        const v = r?.[`cp${i}`];
+        if (typeof v === "string" && v.trim()) return true;
+      }
+      return false;
+    });
+
+    const splitMeta = sampleHasLaps
+      ? { enabled: true, mode: "laps", header: "Vueltas" }
+      : sampleHasCps
+      ? { enabled: true, mode: "checkpoints", header: "Checkpoints" }
+      : { enabled: false, mode: null, header: null };
+
+    // ====== Limpieza mínima para filtros/búsqueda/sorting (SIN clonar objetos enormes)
+    // OJO: aquí NO hacemos map() gigante con {...r}
+    // Solo leemos lo necesario para filtrar/ordenar.
+    let filtered = allScoresRaw;
+
+    // filtro por categoría
+    if (itemId) {
+      filtered = filtered.filter((r) => Number(r?.item_id) === Number(itemId));
     }
 
-    // ✅ Posición por género (net) calculada
-    const genderRankNet = computeGenderRankNet(allScores, runner);
+    // orden por tiempo neto
+    filtered = [...filtered].sort((a, b) => timeToSeconds(getTimeValue(a)) - timeToSeconds(getTimeValue(b)));
 
-    // ✅ Género (F/M)
-    const sexDisplay = runner?.sex || "-";
+    // búsqueda
+    if (q) {
+      const qq = q.toLowerCase();
+      filtered = filtered.filter((r) => {
+        const name = fixText(r?.name ?? "").toString().toLowerCase();
+        const bib = (r?.bib ?? "").toString().toLowerCase();
+        const idCard = (r?.id_card ?? "").toString().toLowerCase();
+        return name.includes(qq) || bib.includes(qq) || idCard.includes(qq);
+      });
+    }
 
-    // ✅ Ritmo con unidad
-    const paceDisplay = formatPace(runner?.pace);
+    // paginación
+    const total = filtered.length;
+    const totalPages = Math.max(1, Math.ceil(total / pageSize));
+    const safePage = Math.min(page, totalPages);
+    const start = (safePage - 1) * pageSize;
+    const pageRows = filtered.slice(start, start + pageSize);
 
-    return {
-      props: {
-        config,
-        data: base,
-        runner,
-        eventKey, // ✅ usa SIEMPRE el del route
+    // ====== Ranking por género (GLOBAL) (necesita allScoresRaw)
+    // Si esto se te pone pesado con eventos gigantes, luego lo optimizamos con cache en API.
+    const genderRankMap = new Map();
+    const genderGroups = new Map();
+
+    for (const r of allScoresRaw) {
+      const sex = (r?.sex ?? "").toString().trim().toUpperCase();
+      const bib = String(r?.bib ?? "");
+      if (!sex || !bib) continue;
+      if (!genderGroups.has(sex)) genderGroups.set(sex, []);
+      genderGroups.get(sex).push(r);
+    }
+
+    for (const [sex, arr] of genderGroups.entries()) {
+      const sorted = [...arr].sort((a, b) => timeToSeconds(getTimeValue(a)) - timeToSeconds(getTimeValue(b)));
+      sorted.forEach((r, idx) => {
+        const bib = String(r?.bib ?? "");
+        genderRankMap.set(`${sex}::${bib}`, idx + 1);
+      });
+    }
+
+    // ====== Construir SOLO las filas que renderizas (payload liviano)
+    const rowsSlim = pageRows.map((r) => {
+      const bib = String(r?.bib ?? "");
+      const sex = (r?.sex ?? "").toString().trim().toUpperCase();
+
+      // splits SOLO para la fila actual
+      let splitLines = [];
+      if (splitMeta.enabled) {
+        if (splitMeta.mode === "laps") {
+          const pick =
+            (Array.isArray(r?.loop_a_format) && r.loop_a_format) ||
+            (Array.isArray(r?.loop_b_format) && r.loop_b_format) ||
+            (Array.isArray(r?.loop_c_format) && r.loop_c_format) ||
+            null;
+
+          if (Array.isArray(pick) && pick.length) {
+            splitLines = pick
+              .map((l, idx) => {
+                const n = l?.lap_number ?? idx + 1;
+                const t = typeof l?.lap_time === "string" ? l.lap_time : "";
+                return n && t ? `Vuelta ${n}: ${t}` : null;
+              })
+              .filter(Boolean);
+          }
+        } else if (splitMeta.mode === "checkpoints") {
+          const out = [];
+          for (let i = 1; i <= 9; i++) {
+            const v = r?.[`cp${i}`];
+            if (typeof v === "string" && v.trim()) out.push(`CP${i}: ${v.trim()}`);
+          }
+          splitLines = out;
+        }
+      }
+
+      const time = r?.net_score ?? r?.total_score ?? "";
+
+      return {
+        // campos para UI
+        id: r?.id ?? null,
+        name: fixText(r?.name) ?? "-",
         bib,
+        item_name: fixText(r?.item_name) ?? "-",
+        net_score: r?.net_score ?? null,
+        total_score: r?.total_score ?? null,
 
-        computed: {
-          sexDisplay, // Género
-          paceDisplay, // Ritmo min/km
-          overallRankNet, // Posición General
-          categoryRankNet: categoryRankNetFromApi ?? categoryRankFallback, // Posición Categoría
-          categoryRankNetFromApi, // opcional, por si lo quieres mostrar/debug
-          categoryRankFallback, // opcional, por si lo quieres mostrar/debug
-          genderRankNet, // Posición Género
-          totalFinishers, // Total corredores (finalizadores)
-        },
+        // ranks
+        overallRank: r?.net_ranking ?? null,
+        categoryRank: r?.item_net_ranking ?? null,
+        genderRank: sex ? genderRankMap.get(`${sex}::${bib}`) ?? null : null,
+        sex,
+
+        // pace display
+        paceDisplay: formatPace(r?.pace),
+
+        // splits
+        splitLines,
+      };
+    });
+
+    const data = {
+      ...base,
+      // ✅ SOLO lo necesario:
+      results: rowsSlim,
+      resultsMeta: {
+        total,
+        page: safePage,
+        pageSize,
+        totalPages,
+        q,
+        itemId,
+        splitEnabled: splitMeta.enabled,
+        splitHeader: splitMeta.header,
       },
     };
+
+    return { props: { config, data } };
   } catch (error) {
     return {
       props: {
-        error: error?.message ?? "Error cargando certificado",
+        error: error?.message ?? "Error cargando resultados",
         config: null,
         data: null,
-        runner: null,
-        computed: null,
-        eventKey,
-        bib,
       },
     };
   }
 }
+
 
 export default function CertificatePage({ config, data, runner, computed, error, eventKey, bib }) {
   if (error) {
