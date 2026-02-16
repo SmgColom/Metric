@@ -100,7 +100,7 @@ export default async function handler(req, res) {
     const raw = await fetchFeibotRace(publicKey);
 
     // Cache CDN (Vercel)
-    res.setHeader("Cache-Control", "s-maxage=60, stale-while-revalidate=300");
+    res.setHeader("Cache-Control", "s-maxage=30, stale-while-revalidate=300");
 
     const scores = Array.isArray(raw?.scores) ? raw.scores : [];
 

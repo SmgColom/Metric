@@ -1,5 +1,6 @@
 // PATH: localhost:3000/api/articles
-import connectMongo from "@/lib/mongodb/connectMongo";
+
+
 
 async function articleApi(req, res){
   try {
