@@ -1,29 +1,16 @@
-import { Fragment, useEffect } from "react";
+// src/pages/_app.jsx
+import { Fragment } from "react";
 import Head from "next/head";
-import Script from "next/script";
 import { useRouter } from "next/router";
 
 import "@/styles/scss/main.scss";
 import Layout from "@/components/layout";
 
-
-function App({ Component, pageProps }) {
+export default function App({ Component, pageProps }) {
   const router = useRouter();
 
-  // ✅ Detecta si estamos en páginas de evento (pages/e/[eventKey]...)
+  // Detecta si estamos en páginas de evento (pages/e/[eventKey]...)
   const isEventRoute = router.pathname.startsWith("/e/");
-
-  // C. SETUP OF GA PAGE VIEWS
-  useEffect(() => {
-    const handleRouteChange = (url) => {
-      ga.pageview(url);
-    };
-
-    router.events.on("routeChangeComplete", handleRouteChange);
-    return () => {
-      router.events.off("routeChangeComplete", handleRouteChange);
-    };
-  }, [router.events]);
 
   return (
     <Fragment>
@@ -46,5 +33,4 @@ function App({ Component, pageProps }) {
   );
 }
 
-export default App;
 

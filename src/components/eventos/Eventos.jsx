@@ -8,7 +8,7 @@ const EVENTS = [
     key: "2728",
     title: "Carrera Corazón Quindío 2025",
     href: "/e/2728",
-    banner: "/events/2728/banner.png", // asegúrate que exista
+    banner: "/events/2728/Banner.png", 
   },
   {
     key: "2701",
