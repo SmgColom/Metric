@@ -3,12 +3,6 @@ import { fetchFeibotRace } from "@/lib/feibot";
 import { toInt } from "@/lib/number";
 
 
-// ===== Helpers =====
-function toInt(v, fallback) {
-  const n = Number.parseInt(String(v), 10);
-  return Number.isFinite(n) ? n : fallback;
-}
-
 function toBool(v, fallback) {
   if (v === undefined || v === null) return fallback;
   const s = String(v).trim().toLowerCase();

@@ -35,29 +35,6 @@ function isScalar(v) {
   return type === "string" || type === "number" || type === "boolean";
 }
 
-// Fix mojibake (JoaquÃ­n -> Joaquín)
-function fixText(input) {
-  if (input === null || input === undefined) return input;
-  if (typeof input !== "string") return input;
-
-  const s = input.trim();
-  if (!s) return s;
-
-  const looksBroken = /Ã.|Â./.test(s);
-  let out = s;
-
-  if (looksBroken) {
-    try {
-      out = Buffer.from(s, "latin1").toString("utf8");
-    } catch {
-      out = s;
-    }
-  }
-
-  out = out.replace(/;/g, " ").replace(/\s+/g, " ").trim();
-  return out;
-}
-
 function timeToSeconds(t) {
   if (!t) return Number.POSITIVE_INFINITY;
   const s = String(t).trim();

@@ -31,29 +31,6 @@ function getTimeValue(r) {
   return r?.net_score ?? r?.total_score ?? "";
 }
 
-// ✅ Fix mojibake + limpieza separadores (SSR-safe)
-function fixText(input) {
-  if (input === null || input === undefined) return input;
-  if (typeof input !== "string") return input;
-
-  const s = input.trim();
-  if (!s) return s;
-
-  const looksBroken = /Ã.|Â./.test(s);
-  let out = s;
-
-  if (looksBroken) {
-    try {
-      out = Buffer.from(s, "latin1").toString("utf8");
-    } catch {
-      out = s;
-    }
-  }
-
-  out = out.replace(/;/g, " ").replace(/¡/g, "").replace(/\s+/g, " ").trim();
-  return out;
-}
-
 function sanitizeRunner(r) {
   if (!r || typeof r !== "object") return r;
   return {
