@@ -32,6 +32,7 @@ function HeroSplitSection({ title, description, images = [], children }) {
             <Image
               src={images[current].src}
               alt={images[current].alt || title}
+              style={{ objectFit: "cover" }}
               fill
               priority
               className={styles.image}
