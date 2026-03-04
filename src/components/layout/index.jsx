@@ -11,13 +11,16 @@ const inter = Inter({
 
 function Layout(props) {
   return (
-    <div className={`${styles.app} ${inter.className}`}>
-      <Header />
-      <main className={styles.main}>
-        {props.children}
-      </main> 
-      <Footer />
-    </div>
+            <p style={{ opacity: 0.8 }}>
+          Este sitio está temporalmente deshabilitado.
+        </p>
+   // <div className={`${styles.app} ${inter.className}`}>
+     // <Header />
+      //<main className={styles.main}>
+       // {props.children}
+      //</main> 
+      //<Footer />
+    //</div>
   );
 }
 
