@@ -27,4 +27,4 @@ specializing in multi-sport event chronometry using RFID technology.
   from an external news API — no manual content updates needed
 
 ## 📸 Preview
-![Metric Solutions preview](public/og-image.jpg)
+![Metric Solutions preview](metric/public/og-image.jpg)
